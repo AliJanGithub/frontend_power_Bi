@@ -8,7 +8,8 @@ import { Card, CardHeader, CardContent, CardDescription, CardTitle } from '../ui
 import { Alert, AlertDescription } from '../ui/alert';
 import { Loader2 } from '../icons/Icons';
 import { Logo } from '../Logo';
-
+import { useNavigate } from 'react-router-dom';
+// import '../mycss'
 export function LoginPage() {
   const { login } = useAuth();
   const { showToast } = useToast();
@@ -16,28 +17,37 @@ export function LoginPage() {
     email: '',
     password: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
+ const navigate = useNavigate();
 
-    try {
-      const result = await login(formData.email, formData.password);
-      if (result.success) {
-        showToast('Login successful');
-        
-      } else {
-        setError(result.error || 'Login failed');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setIsLoading(false);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+
+  try {
+    const result = await login(formData.email, formData.password);
+
+    if (result.success) {
+      showToast(`Login successful! Welcome back, ${result.user?.name || "User"}!`, "success");
+      navigate("/");
+    } else {
+      const message = result.error || "Login failed. Please try again.";
+      setError(message);
+      showToast(message, "error");
     }
-  };
+  } catch (err) {
+    console.error("Unexpected login error:", err);
+    const message = "Unexpected error occurred during login.";
+    setError(message);
+    showToast(message, "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -47,7 +57,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-green-50 px-4">
+    <div id='legacy-design-wrapper' className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-green-50 px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-6">
@@ -81,7 +91,7 @@ export function LoginPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  disabled={isLoading}
+                  disabled={loading}
                 />
               </div>
 
@@ -95,12 +105,12 @@ export function LoginPage() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  disabled={isLoading}
+                  disabled={loading}
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Signing in...

@@ -3,28 +3,28 @@ import { useAuth } from '../AuthContext';
 import { DashboardViewer } from './DashboardViewer';
 import { UserLayout } from '../user/UserLayout';
 import { AdminLayout } from '../admin/AdminLayout';
+import { useNavigate, useParams } from 'react-router-dom';  // ✅ import useParams
 
-
-
-export function DashboardViewerLayout({ dashboardId }) {
+export function DashboardViewerLayout() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { id: dashboardId } = useParams(); // ✅ get :id from URL
   const [currentTab, setCurrentTab] = useState('dashboard-view');
 
   const handleTabChange = (tab) => {
     if (tab === 'dashboard-view') {
-      // Stay on current dashboard view
       setCurrentTab(tab);
     } else {
-      // Navigate to other sections
-      if (user?.role === 'admin') {
-        (window ).navigate('admin', { tab });
+      if (user?.role === 'ADMIN') {
+        navigate(`/admin?tab=${tab}`);
       } else {
-        (window).navigate('user', { tab });
+        navigate(`/user?tab=${tab}`);
       }
     }
   };
 
-  // Get stored navigation state (defaults to false/expanded if no stored state)
+  console.log("dashboardId from URL:", dashboardId);
+
   const getStoredNavState = () => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('portal365-nav-collapsed');
@@ -33,7 +33,7 @@ export function DashboardViewerLayout({ dashboardId }) {
     return false;
   };
 
-  if (user?.role === 'admin') {
+  if (user?.role === 'ADMIN') {
     return (
       <AdminLayout 
         currentTab={currentTab} 

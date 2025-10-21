@@ -98,7 +98,7 @@ export function OrganizationSettings() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div   id='legacy-design-wrapper' className="space-y-6">
       <div>
         <h1 className="text-2xl text-gray-900 mb-2">Organization Settings</h1>
         <p className="text-gray-600">Customize your organization's branding and appearance</p>

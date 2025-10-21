@@ -136,7 +136,7 @@ export function ReportManagement() {
 
 
   const ReportForm = () => (
-    <div className="space-y-6">
+    <div id='legacy-design-wrapper' className="space-y-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Report Title */}
         <div className="space-y-3">
@@ -290,7 +290,7 @@ export function ReportManagement() {
 
   return (
     <TooltipProvider>
-      <div className="space-y-6">
+      <div id='legacy-design-wrapper' className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl text-gray-900">Report Management</h1>

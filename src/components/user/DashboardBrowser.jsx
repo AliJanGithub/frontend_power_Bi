@@ -20,9 +20,16 @@ import {
   Grid3X3,
   List
 } from '../icons/Icons';
+import { useDashboards } from '../DashboardContext';
+import { useNavigate } from 'react-router-dom';
 
 export function DashboardBrowser() {
-  const { user } = useAuth();
+  // existing
+  const navigate=useNavigate()
+// NEW: a separate input state so Search button actually applies the query
+const [pendingSearch, setPendingSearch] = useState('');
+
+  // const { user } = useAuth();
   const { showToast } = useToast();
   const { preferences, updatePreferences } = useSettings();
   const { 
@@ -33,32 +40,56 @@ export function DashboardBrowser() {
     trackUsage,
     getAllUsers
   } = useData();
-  
-  const allUsers = getAllUsers();
-  
+  const {user}=useAuth()
+  console.log("user dashboarduser user role user",user)
+  // const allUsers = getAllUsers();
+  const {dashboards}=useDashboards()
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
   const viewMode = preferences.viewMode;
 
-  const accessibleDashboards = getUserAccessibleDashboards();
+   const handleSearch = () => {
+  // apply trimmed value to the real searchQuery which powers the list
+  setSearchQuery(pendingSearch.trim());
+};
+
+const handleInputKeyDown = (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    handleSearch();
+  }
+};
+
 
   // Filter dashboards based on search and filters
   const filteredDashboards = useMemo(() => {
-    return accessibleDashboards.filter(dashboard => {
+    return dashboards.filter(dashboard => {
       const matchesSearch = !searchQuery || 
         dashboard.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         dashboard.description.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesDepartment = !selectedDepartment || dashboard.department === selectedDepartment;
+      // const matchesDepartment = !selectedDepartment || dashboard.department === selectedDepartment;
 
-      return matchesSearch && matchesDepartment;
+      return matchesSearch ;
     });
-  }, [accessibleDashboards, searchQuery, selectedDepartment]);
+  }, [dashboards, searchQuery]);
 
+// const handleViewDashboard = (dashboardId) => {
+//   // Removed trackUsage() since it doesn't exist
+//   if (window?.navigate) {
+//     window.navigate('view-dashboard', { id: dashboardId });
+//   } else {
+//     // fallback if your router uses URL navigation
+//     window.location.href = `/view-dashboard/id=${dashboardId}`;
+//   }
+// };
   const handleViewDashboard = (dashboardId) => {
-    trackUsage(dashboardId, 'view');
-    (window ).navigate('view-dashboard', { id: dashboardId });
+    // ✅ Correct navigation to dashboard viewer
+    navigate(`/view-dashboard/${dashboardId}`);
   };
+
+
+
 
   const handleToggleFavorite = (dashboardId, title) => {
     const isFavorite = favorites.includes(dashboardId);
@@ -87,7 +118,7 @@ export function DashboardBrowser() {
       <Card>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-            <div className="relative">
+            {/* <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search dashboards..."
@@ -95,9 +126,34 @@ export function DashboardBrowser() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-9"
               />
-            </div>
+            </div> */}
+ <div className="flex items-center space-x-2">
+  <div className="relative flex-1">
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+    <Input
+      placeholder="Search dashboards..."
+      // controlled by pendingSearch now
+      value={pendingSearch}
+      onChange={(e) => setPendingSearch(e.target.value)}
+      onKeyDown={handleInputKeyDown}
+      className="pl-10 h-9"
+    />
+  </div>
+
+  <Button
+    variant="default"
+    size="sm"
+    onClick={handleSearch}
+    disabled={!pendingSearch.trim()}
+  >
+    <Search className="h-4 w-4 mr-2" />
+    Search
+  </Button>
+</div>
+
+
             
-            <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+            {/* <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="All Departments" />
               </SelectTrigger>
@@ -109,7 +165,7 @@ export function DashboardBrowser() {
                   </SelectItem>
                 ))}
               </SelectContent>
-            </Select>
+            </Select> */}
 
             <div className="flex space-x-2">
               {hasActiveFilters && (
@@ -178,7 +234,7 @@ export function DashboardBrowser() {
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredDashboards.map((dashboard) => (
-            <Card key={dashboard.id} className="hover:shadow-lg transition-all duration-200 border-0 bg-white/80 backdrop-blur-sm">
+            <Card key={dashboard._id} className="hover:shadow-lg transition-all duration-200 border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div className="space-y-2 flex-1">
@@ -188,16 +244,16 @@ export function DashboardBrowser() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleToggleFavorite(dashboard.id, dashboard.title)}
+                    onClick={() => handleToggleFavorite(dashboard._id, dashboard.title)}
                     className={`${
-                      favorites.includes(dashboard.id)
+                      favorites.includes(dashboard._id)
                         ? 'text-red-600 hover:text-red-700'
                         : 'text-gray-400 hover:text-red-600'
                     }`}
                   >
                     <Heart 
                       className={`h-4 w-4 ${
-                        favorites.includes(dashboard.id) ? 'fill-current' : ''
+                        favorites.includes(dashboard._id) ? 'fill-current' : ''
                       }`} 
                     />
                   </Button>
@@ -224,7 +280,7 @@ export function DashboardBrowser() {
 
                 <Button 
                   className="w-full"
-                  onClick={() => handleViewDashboard(dashboard.id)}
+                  onClick={() => handleViewDashboard(dashboard._id)}
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   View Dashboard
@@ -239,8 +295,8 @@ export function DashboardBrowser() {
           <div className="bg-gray-50 border-b border-gray-200 px-6 py-3">
             <div className="grid grid-cols-12 gap-4 items-center text-sm text-gray-600">
               <div className="col-span-4">Dashboard</div>
-              <div className="col-span-3">Department</div>
-              <div className="col-span-4">Accessed by</div>
+              <div className="col-span-3">company</div>
+              {/* <div className="col-span-4">Accessed by</div> */}
               <div className="col-span-1"></div>
             </div>
           </div>
@@ -248,7 +304,7 @@ export function DashboardBrowser() {
           {/* Rows */}
           <div className="divide-y divide-gray-100">
             {filteredDashboards.map((dashboard) => (
-              <div key={dashboard.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+              <div key={dashboard._id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
                 <div className="grid grid-cols-12 gap-4 items-center">
                   {/* Dashboard Info - 4 cols */}
                   <div className="col-span-4 flex items-center space-x-3">
@@ -263,23 +319,23 @@ export function DashboardBrowser() {
                   
                   {/* Department - 3 cols */}
                   <div className="col-span-3">
-                    <div className="text-sm text-gray-900">{dashboard.department}</div>
+                    <div className="text-sm text-gray-900">{dashboard.company.name}</div>
                     <div className="text-xs text-gray-500">Internal</div>
                   </div>
                   
                   {/* Access Users - 4 cols */}
-                  <div className="col-span-4">
+                  {/* <div className="col-span-4">
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-gray-500">Accessed by</span>
                       <div className="flex -space-x-1">
                         {dashboard.accessUsers.slice(0, 4).map((userId, index) => {
-                          const user = allUsers.find(u => u.id === userId);
+                          const users = user.find(u => u.id === userId);
                           return (
                             <Tooltip key={userId}>
                               <TooltipTrigger asChild>
                                 <div className="w-6 h-6 bg-gray-300 rounded-full border-2 border-white flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
                                   <span className="text-xs text-gray-600 font-medium">
-                                    {user?.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
+                                    {users?.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
                                   </span>
                                 </div>
                               </TooltipTrigger>
@@ -296,14 +352,14 @@ export function DashboardBrowser() {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   
                   {/* Actions - 1 col */}
                   <div className="col-span-1 flex items-center justify-end space-x-2">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleToggleFavorite(dashboard.id, dashboard.title)}
+                      onClick={() => handleToggleFavorite(dashboard._id, dashboard.title)}
                       className={`h-8 w-8 p-1 ${
                         favorites.includes(dashboard.id)
                           ? 'text-red-600 hover:text-red-700'
@@ -312,12 +368,12 @@ export function DashboardBrowser() {
                     >
                       <Heart 
                         className={`h-5 w-5 ${
-                          favorites.includes(dashboard.id) ? 'fill-current' : ''
+                          favorites.includes(dashboard._id) ? 'fill-current' : ''
                         }`} 
                       />
                     </Button>
                     <Button 
-                      onClick={() => handleViewDashboard(dashboard.id)}
+                      onClick={() => handleViewDashboard(dashboard._id)}
                       size="sm"
                       className="h-8 px-3"
                     >

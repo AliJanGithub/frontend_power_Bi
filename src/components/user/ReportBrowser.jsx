@@ -20,27 +20,77 @@ import {
   Grid3X3,
   List
 } from '../icons/Icons';
+import { useUserManagement } from '../hooks/useUserManagement';
 
 export function ReportBrowser() {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const {users}=useUserManagement()
   const { showToast } = useToast();
   const { preferences, updatePreferences } = useSettings();
   const { 
-    getUserAccessibleReports, 
+    // getUserAccessibleReports, 
     departments, 
     reportFavorites, 
     toggleReportFavorite, 
-    trackReportUsage,
-    getAllUsers
+    
   } = useData();
   
-  const allUsers = getAllUsers();
+  const allUsers = users;
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
   const viewMode = preferences.viewMode;
 
-  const accessibleReports = getUserAccessibleReports();
+  const accessibleReports = [
+  {
+    id: '1',
+    title: 'Income Statement Report',
+    description: 'Comprehensive income statement with revenue, expenses, and profit analysis',
+    embedUrl: 'https://globaldata365-my.sharepoint.com/personal/haseeb_tariq_globaldata365_com/_layouts/15/Doc.aspx?sourcedoc={48a9e4a5-4ad9-4210-875e-898cf80ec2f5}&action=embedview&wdHideGridlines=True&wdHideHeaders=True&wdDownloadButton=True&wdInConfigurator=True',
+    department: 'Finance',
+    createdBy: '1',
+    createdAt: '2024-01-01',
+    lastModified: '2024-01-25',
+    isActive: true,
+    accessUsers: ['1', '2', '3']
+  },
+  {
+    id: '2',
+    title: 'Balance Sheet Report',
+    description: 'Detailed balance sheet analysis with assets, liabilities, and equity breakdown',
+    embedUrl: 'https://example.sharepoint.com/:x:/s/finance/balance-sheet-2024',
+    department: 'Finance',
+    createdBy: '1',
+    createdAt: '2024-01-05',
+    lastModified: '2024-01-28',
+    isActive: true,
+    accessUsers: ['1', '2']
+  },
+  {
+    id: '3',
+    title: 'Sales Performance Report',
+    description: 'Monthly sales analysis with detailed performance metrics by region and product',
+    embedUrl: 'https://example.sharepoint.com/:x:/s/sales/performance-report',
+    department: 'Sales',
+    createdBy: '1',
+    createdAt: '2024-01-08',
+    lastModified: '2024-01-30',
+    isActive: true,
+    accessUsers: ['1', '2', '3']
+  },
+  {
+    id: '4',
+    title: 'HR Analytics Report',
+    description: 'Employee analytics including headcount, turnover, and performance metrics',
+    embedUrl: 'https://example.sharepoint.com/:x:/s/hr/analytics-2024',
+    department: 'Human Resources',
+    createdBy: '1',
+    createdAt: '2024-01-12',
+    lastModified: '2024-02-01',
+    isActive: true,
+    accessUsers: ['1', '3']
+  }
+];
 
   // Filter reports based on search and filters
   const filteredReports = useMemo(() => {

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Alert, AlertDescription } from '../ui/alert';
 import { ProfilePictureUpload } from './ProfilePictureUpload';
 import { User, Edit, Check, X, Lock, Key, Shield } from '../icons/Icons';
+import api from '../../lib/api';
 
 export function UserProfile() {
   const { user, updateUser } = useAuth();
@@ -25,7 +26,7 @@ export function UserProfile() {
     newPassword: '',
     confirmPassword: ''
   });
-  const [passwordErrors, setPasswordErrors] = useState<any>({});
+  const [passwordErrors, setPasswordErrors] = useState({});
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
   const handleSave = () => {
@@ -77,32 +78,37 @@ export function UserProfile() {
     return Object.keys(errors).length === 0;
   };
 
-  const handlePasswordReset = async (e) => {
-    e.preventDefault();
-    
-    if (!validatePassword()) return;
+ const handlePasswordReset = async (e) => {
+  e.preventDefault();
+  
+  if (!validatePassword()) return;
 
-    setIsSubmittingPassword(true);
-    
-    try {
-      // Simulate password reset API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In a real app, you would call your password reset API here
-      showToast('Password updated successfully');
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-      setPasswordErrors({});
-      setIsPasswordDialogOpen(false);
-    } catch (error) {
-      showToast('Failed to update password', 'error');
-    } finally {
-      setIsSubmittingPassword(false);
-    }
-  };
+  setIsSubmittingPassword(true);
+  const { currentPassword, newPassword } = passwordData;
+
+  try {
+    const response = await api.post("auth/change-password", {
+      currentPassword,
+      newPassword,
+    });
+
+    console.log("Password change response:", response);
+
+    showToast('Password updated successfully');
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    });
+    setPasswordErrors({});
+    setIsPasswordDialogOpen(false);
+  } catch (error) {
+    console.error("Password change failed:", error);
+    showToast('Failed to update password', 'error');
+  } finally {
+    setIsSubmittingPassword(false);
+  }
+};
 
   const resetPasswordForm = () => {
     setPasswordData({
@@ -301,12 +307,12 @@ export function UserProfile() {
 
               <div>
                 <Label className="text-sm text-gray-500">User ID</Label>
-                <p className="text-sm mt-1 text-gray-700">{user?.id}</p>
+                <p className="text-sm mt-1 text-gray-700">{user?._id}</p>
               </div>
 
               <div>
                 <Label className="text-sm text-gray-500">Member Since</Label>
-                <p className="text-sm mt-1 text-gray-700">January 2024</p>
+                <p className="text-sm mt-1 text-gray-700">{user?.createdAt}</p>
               </div>
 
               <div>

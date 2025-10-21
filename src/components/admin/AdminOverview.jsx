@@ -17,7 +17,7 @@ import {
   BarChart3
 } from '../icons/Icons';
 
-
+import { useAdminApi } from '../hooks/useAdminApi';
 
 // Mock users by department - this would come from a user service in real app
 const mockUsersByDepartment = {
@@ -43,10 +43,26 @@ const departmentColors = [
 ];
 
 export function AdminOverview({ setCurrentTab }) {
-  const { dashboards, reports, invitations } = useData();
-
+  const {  reports, invitations } = useData();
+  const { // Data
+   
+    users,
+    dashboards,
+    // Status
+    loading,
+    error,
+    success,
+    // Status setters (allows component to clear or set local errors if needed)
+    setError,
+    setSuccess,
+    // Actions
+    refreshData,
+    createDashboard,
+    inviteUser,
+    assignDashboard,
+    deleteDashboard,}=useAdminApi()
   // Calculate metrics
-  const totalDashboards = dashboards.filter(d => d.isActive).length;
+  const totalDashboards = dashboards.length
   const totalReports = reports.filter(r => r.isActive).length;
   const totalUsers = mockTotalUsers;
   const pendingInvitations = invitations.filter(inv => inv.status === 'pending').length;
@@ -62,10 +78,7 @@ export function AdminOverview({ setCurrentTab }) {
     }
 
     const departmentCounts = {};
-    items.filter(item => item.isActive).forEach(item => {
-      departmentCounts[item.department] = (departmentCounts[item.department] || 0) + 1;
-    });
-
+  
     return Object.entries(departmentCounts).map(([dept, count], index) => ({
       name: dept,
       value: count,
@@ -78,7 +91,7 @@ export function AdminOverview({ setCurrentTab }) {
   const usersByDept = getDepartmentData([], 'users');
 
   return (
-    <div className="space-y-6">
+    <div id='legacy-design-wrapper' className="space-y-6">
       {/* Welcome Message */}
       <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg border border-gray-200">
         <h1 className="text-2xl text-gray-900 mb-2">Welcome to BI Portal 365</h1>
@@ -92,7 +105,7 @@ export function AdminOverview({ setCurrentTab }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Active Users</p>
-                <p className="text-3xl font-semibold text-gray-900">{totalUsers}</p>
+                <p className="text-3xl font-semibold text-gray-900">{users.length}</p>
                 <p className="text-xs text-gray-500 mt-1">Registered users</p>
               </div>
               <div className="bg-blue-100 p-4 rounded-full">

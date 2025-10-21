@@ -21,17 +21,19 @@ import {
 export function NotificationButton() {
   const { user } = useAuth();
   const { 
-    getUserNotifications, 
+    // getUserNotifications, 
     markNotificationAsRead, 
     markAllNotificationsAsRead,
-    getUnreadCount 
+    // getUnreadCount 
   } = useData();
   
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const notifications = getUserNotifications();
-  const unreadCount = getUnreadCount();
+  const buttonRef = useRef(null);
+  // const notifications = getUserNotifications();
+
+  // const unreadCount = getUnreadCount();
+  const unreadCount=7
 
   // Calculate dropdown position
   const updatePosition = () => {
@@ -110,6 +112,9 @@ export function NotificationButton() {
 
   // Dropdown component
   const DropdownContent = () => (
+    <div id='legacy-design-wrapper'>
+
+    
     <div 
       id="notification-dropdown"
       className="fixed w-80"
@@ -119,7 +124,7 @@ export function NotificationButton() {
         zIndex: 9999
       }}
     >
-      <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm animate-in fade-in-80 slide-in-from-top-2">
+      <Card id={"legacy-design-wrapper"} className="shadow-xl border-0 bg-white/95 backdrop-blur-sm animate-in fade-in-80 slide-in-from-top-2">
         <CardContent className="p-0">
           {/* Header */}
           <div className="px-3 py-2 border-b border-gray-100">
@@ -165,7 +170,7 @@ export function NotificationButton() {
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
-                {notifications.slice(0, 8).map((notification) => (
+                { notifications && notifications.slice(0, 8).map((notification) => (
                   <div
                     key={notification.id}
                     className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
@@ -230,6 +235,7 @@ export function NotificationButton() {
         </CardContent>
       </Card>
     </div>
+    </div>
   );
 
   return (
@@ -237,6 +243,7 @@ export function NotificationButton() {
       {/* Bell Icon Button */}
       <Button
         ref={buttonRef}
+        id={"legacy-design-wrapper"}
         variant="ghost"
         size="sm"
         className="relative p-2 h-auto hover:bg-primary/5 transition-colors"

@@ -25,7 +25,7 @@ export function AdminLayoutTopNav({ children, currentTab, setCurrentTab }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+    <div id='legacy-design-wrapper' className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       {/* Top Navigation Bar */}
       <header className="bg-white/95 backdrop-blur-sm border-b border-primary/10 shadow-sm">
         <div className="px-6 py-4">

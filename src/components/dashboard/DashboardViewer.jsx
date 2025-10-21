@@ -30,12 +30,22 @@ import {
   X,
   Building
 } from '../icons/Icons';
+import { useUserManagement } from '../hooks/useUserManagement';
+import { useDashboards } from '../DashboardContext';
 
 
 
 export function DashboardViewer({ dashboardId }) {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const {dashboardById,getDashboardById}=useDashboards()
+  useEffect(() => {
+    getDashboardById(dashboardId)
+  
+   
+  }, [])
+  
+  console.log("dashboardId",dashboardById)
   const { 
     dashboards, 
     comments, 
@@ -55,7 +65,7 @@ export function DashboardViewer({ dashboardId }) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isManageAccessOpen, setIsManageAccessOpen] = useState(false);
-  const [accessType, setAccessType] = useState('users');
+  const [accessType, setAccessType] = useState('USER');
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedDepartments, setSelectedDepartments] = useState([]);
   const hasTrackedView = useRef(false);
@@ -123,7 +133,7 @@ export function DashboardViewer({ dashboardId }) {
   };
 
   const canDeleteComment = (comment) => {
-    return user?.id === comment.userId || user?.role === 'admin';
+    return user?.id === comment.userId || user?.role === 'ADMIN';
   };
 
   // Initialize access management state when dialog opens
@@ -163,8 +173,10 @@ export function DashboardViewer({ dashboardId }) {
     showToast('Access permissions updated successfully');
   };
 
-  const allUsers = getAllUsers();
-  const availableUsers = allUsers.filter(u => u.role !== 'admin'); // Don't show admins since they have access to everything
+ 
+  const {users} = useUserManagement
+   const allUsers=users
+  // const availableUsers = allUsers.filter(u => u.role !== 'ADMIN'); // Don't show admins since they have access to everything
 
   const renderCommentContent = (content, taggedUserIds) => {
     const { getAllUsers } = useData();
@@ -230,7 +242,7 @@ export function DashboardViewer({ dashboardId }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div id='legacy-design-wrapper' className="space-y-6">
       {/* Dashboard Title and Actions */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl text-gray-900">{dashboard.title}</h1>
@@ -370,7 +382,7 @@ export function DashboardViewer({ dashboardId }) {
                 <Separator />
                 
                 {/* Access Users List */}
-                <div className="space-y-2">
+               {/* <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center text-xs font-medium text-gray-700">
                       <Users className="h-3 w-3 mr-1" />
@@ -393,7 +405,7 @@ export function DashboardViewer({ dashboardId }) {
                               Control who can access "{dashboard.title}"
                             </div>
 
-                            {/* Access Type Toggle */}
+                            
                             <div className="flex space-x-2 border border-gray-200 rounded-lg p-1 bg-white w-fit">
                               <Button
                                 variant={accessType === 'users' ? 'default' : 'ghost'}
@@ -420,8 +432,8 @@ export function DashboardViewer({ dashboardId }) {
                                 <div>
                                   <h4 className="font-medium mb-3">Select Users</h4>
                                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                                    {availableUsers.map((availableUser) => (
-                                      <div key={availableUser.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                                    {allUsers.map((availableUser) => (
+                                      <div key={availableUser_.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                                         <div className="flex items-center space-x-3">
                                           <Avatar className="h-8 w-8">
                                             {availableUser.profilePicture ? (
@@ -435,7 +447,7 @@ export function DashboardViewer({ dashboardId }) {
                                           <div>
                                             <p className="font-medium text-sm">{availableUser.name}</p>
                                             <p className="text-xs text-gray-500">{availableUser.email}</p>
-                                            <Badge variant="secondary" className="text-xs mt-1">{availableUser.department}</Badge>
+                                            <Badge variant="secondary" className="text-xs mt-1">{availableUser?.company?.name}</Badge>
                                           </div>
                                         </div>
                                         <Button
@@ -575,8 +587,8 @@ export function DashboardViewer({ dashboardId }) {
                       </Tooltip>
                     )}
                   </div>
-                </div>
-              </div>
+                </div> */}
+              </div> 
             </CardContent>
           </Card>
 

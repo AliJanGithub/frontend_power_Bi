@@ -16,12 +16,13 @@ import {
   ChevronRight,
   FileText
 } from '../icons/Icons';
+import { useDashboards } from '../DashboardContext';
 
 
 export function UserLayout({ children, currentTab, setCurrentTab, initialCollapsed = false }) {
-  const { user } = useAuth();
-  const { favorites, getUserAccessibleDashboards } = useData();
-  
+  // const { user } = useAuth();
+  const { favorites } = useData();
+  const {dashboards}=useDashboards()
   // Initialize from localStorage or use initialCollapsed
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -31,7 +32,44 @@ export function UserLayout({ children, currentTab, setCurrentTab, initialCollaps
     return initialCollapsed;
   });
 
-  const accessibleDashboards = getUserAccessibleDashboards();
+  const accessibleDashboards = [
+  {
+    id: '1',
+    userId: '2',
+    userName: 'John Doe',
+    dashboardId: '1',
+    dashboardTitle: 'Sales Performance Dashboard',
+    action: 'view',
+    timestamp: '2024-01-25T10:30:00Z'
+  },
+  {
+    id: '2',
+    userId: '3',
+    userName: 'Jane Smith',
+    dashboardId: '2',
+    dashboardTitle: 'Marketing Analytics',
+    action: 'view',
+    timestamp: '2024-01-25T11:45:00Z'
+  },
+  {
+    id: '3',
+    userId: '2',
+    userName: 'John Doe',
+    dashboardId: '3',
+    dashboardTitle: 'Finance Dashboard',
+    action: 'view',
+    timestamp: '2024-01-25T14:20:00Z'
+  },
+  {
+    id: '4',
+    userId: '3',
+    userName: 'Jane Smith',
+    dashboardId: '3',
+    dashboardTitle: 'Finance Dashboard',
+    action: 'favorite',
+    timestamp: '2024-01-25T15:30:00Z'
+  }
+];
 
   // Handle collapse state change and persist to localStorage
   const handleCollapseToggle = () => {
@@ -141,11 +179,11 @@ export function UserLayout({ children, currentTab, setCurrentTab, initialCollaps
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Available Dashboards</span>
-                  <span className="font-medium">{accessibleDashboards.length}</span>
+                  <span className="font-medium">{dashboards.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Your Favorites</span>
-                  <span className="font-medium">{favorites.length}</span>
+                  {/* <span className="text-gray-600">Your Favorites</span> */}
+                  {/* <span className="font-medium">{favorites.length}</span> */}
                 </div>
               </div>
             </div>

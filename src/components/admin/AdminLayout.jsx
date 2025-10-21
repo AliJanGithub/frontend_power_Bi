@@ -49,7 +49,7 @@ export function AdminLayout({ children, currentTab, setCurrentTab, initialCollap
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+    <div id='legacy-design-wrapper' className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       {/* Header */}
       <header className="bg-white/95 backdrop-blur-sm border-b border-primary/10 shadow-sm">
         <div className="px-6 py-4">
@@ -66,7 +66,7 @@ export function AdminLayout({ children, currentTab, setCurrentTab, initialCollap
         </div>
       </header>
 
-      <div className="flex">
+      <div id='legacy-design-wrapper' className="flex">
         {/* Sidebar */}
         <nav className={`${isCollapsed ? 'w-12' : 'w-44'} bg-white/80 backdrop-blur-sm border-r border-primary/10 min-h-[calc(100vh-73px)] shadow-sm transition-all duration-300`}>
           {/* Collapse Button */}

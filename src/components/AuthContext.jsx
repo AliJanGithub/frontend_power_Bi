@@ -1,98 +1,105 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
-import { config } from '../constants/constants';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import api from '../lib/api';
+
+
+
 
 const AuthContext = createContext(undefined);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRoleUser,setUserRoleUser]=useState([])
+  const [loadings, setLoading] = useState(true);
+  const [error,setError]=useState(null)
 
-  // Check stored login info when app loads
   useEffect(() => {
-    const storedToken = localStorage.getItem('powerbi_token');
-    const storedUser = localStorage.getItem('powerbi_user');
-
-    if (storedToken && storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
-    }
+    if(!localStorage.getItem('accesstoken')) return
+   getUsers()
+    setLoading(false);
   }, []);
 
-  // ✅ Login function that saves token + user
-  const login = async (email, password) => {
-    try {
-      const response = await axios.post(`${config.backend_api}/api/auth/login`, {
-        email,
-        password,
-      });
+ const login = async (email, password) => {
+  try {
+    const response = await api.post('/auth/login', { email, password });
 
-      // Example response: { success: true, token: "abc123", user: {...} }
-      const result = response.data;
+    // ✅ Log only the data part (safe)
+    console.log("Login Response Data:", response.data);
 
-      if (result.success && result.token) {
-        localStorage.setItem('powerbi_token', result.token);
-        localStorage.setItem('powerbi_user', JSON.stringify(result.user));
-
-        setUser(result.user);
-        setIsAuthenticated(true);
-
-        return { success: true, user: result.user };
-      } else {
-        return { success: false, message: 'Invalid credentials' };
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, message: 'Server error, please try again later' };
+    if (!response.data?.success) {
+      throw new Error(response.data?.message || "Invalid login credentials");
     }
-  };
 
-  // ✅ Logout clears all data
+    const { accessToken, refreshToken, user: userData } = response.data.data || {};
+
+    if (!accessToken || !userData) {
+      throw new Error("Invalid login response — missing tokens or user data");
+    }
+
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+
+    return { success: true, user: userData };
+  } catch (error) {
+    // ✅ Avoid logging entire error objects with circular refs
+    console.error("Login failed:", error.message || error);
+
+    return { success: false, error: error.message || "Login failed" };
+  }
+};
+
+
+const getUsers=async()=>{
+   setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get('/users');
+      const allUsers = response.data?.data?.users || [];
+        console.log("all users inside auth context",allUsers)
+      // ✅ Filter only those with role === 'USER'
+      const filteredUsers = allUsers.filter(user => user.role =="USER");
+  
+      setUserRoleUser(filteredUsers);
+      console.log("Filtered users:", filteredUsers);
+      return filteredUsers;
+    } catch (err) {
+      console.error('Get users failed:', err);
+      setError(err.response?.data?.message || err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+}
+  
+
   const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
     setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('powerbi_user');
-    localStorage.removeItem('powerbi_token');
   };
 
-  const forgotPassword = async (email) => {
-    try {
-      await axios.post(`${config.backend_api}/forgot-password`, { email });
-    } catch (error) {
-      console.error('Forgot password error:', error);
-    }
+  const acceptInvite = async (token, password, name) => {
+    const response = await api.post('/auth/accept-invite', { token, password, name });
+    const { accessToken, refreshToken, user: userData } = response.data;
+
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
   };
 
-  const resetPassword = async (token, password) => {
-    try {
-      await axios.post(`${config.backend_api}/reset-password`, { token, password });
-    } catch (error) {
-      console.error('Reset password error:', error);
-    }
-  };
-
-  const updateUser = (updatedUser) => {
-    setUser(updatedUser);
-    localStorage.setItem('powerbi_user', JSON.stringify(updatedUser));
-  };
-
-  const value = {
-    user,
-    isAuthenticated,
-    login,
-    logout,
-    forgotPassword,
-    resetPassword,
-    updateUser,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loadings, login, logout, acceptInvite,userRoleUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-// ✅ Hook for using auth anywhere
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

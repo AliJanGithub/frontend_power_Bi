@@ -348,7 +348,7 @@ export function DataProvider({ children }) {
       favorites, reportFavorites, usageMetrics,
       notifications, departments,
       addDashboard, updateDashboard, deleteDashboard,
-      grantAccess, revokeAccess
+      grantAccess, revokeAccess,
       // and all your other functions unchanged...
     }}>
       {children}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useData } from '../DataContext';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -30,6 +30,8 @@ import {
   FileText
 } from '../icons/Icons';
 import { useToast } from '../ToastProvider';
+import { useUserManagement } from '../hooks/useUserManagement';
+
 
 // Mock users data (in real app this would come from backend)
 const initialMockUsers = [
@@ -76,8 +78,8 @@ export function UserManagement() {
     revokeReportAccess,
     departments 
   } = useData();
-  
-  const [users, setUsers] = useState(initialMockUsers);
+  const {addUser,error,getUsers,inviteUser,loading,users,deleteUser}=useUserManagement()
+  // const [users, setUsers] = useState(initialMockUsers);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isAccessDialogOpen, setIsAccessDialogOpen] = useState(false);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
@@ -85,14 +87,50 @@ export function UserManagement() {
   const [managingAccessUser, setManagingAccessUser] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [newRole, setNewRole] = useState('user');
-
+  const [pendingNumbers,setPendingNumbers]=useState([])
   const [inviteEmail, setInviteEmail] = useState('');
+  const [name,setname]=useState("")
   const [inviteRole, setInviteRole] = useState('user');
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [departmentAccess, setDepartmentAccess] = useState({});
   const [expandedDepartments, setExpandedDepartments] = useState([]);
   const [expandedContentSections, setExpandedContentSections] = useState([]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  const fetchUsers = async () => {
+    try {
+      const data = await getUsers(); // ✅ using your hook function
+      console.log('Fetched users:', data);
+    } catch (err) {
+      console.error('Failed to load users:', err);
+    }
+  };
+
+const invitationCheck=()=>{
+  const res=users.length >0 ? users.filter((obj)=>obj.isActive!=true) : [];
+  setPendingNumbers(res)
+
+}
+
+  useEffect(() => {
+    fetchUsers();
+    invitationCheck()
+  }, []);
 
   const handleSendInvitation = async (e) => {
     e.preventDefault();
@@ -107,20 +145,14 @@ export function UserManagement() {
       return;
     }
 
-    // Check if user already exists
-    const existingUser = mockUsers.find(user => user.email === inviteEmail);
-    if (existingUser) {
-      setEmailError('User with this email already exists');
-      setIsLoading(false);
-      return;
-    }
+    
 
     try {
-      const result = await sendInvitation(inviteEmail, inviteRole);
+      const result = await inviteUser(inviteEmail, name);
       if (result.success) {
-        showToast(`${inviteRole === 'admin' ? 'Admin' : 'User'} invitation sent successfully`);
+        showToast(`User invitation sent successfully`);
         setInviteEmail('');
-        setInviteRole('user');
+        setname('');
         setIsInviteDialogOpen(false);
       } else {
         setEmailError(result.error || 'Failed to send invitation');
@@ -150,13 +182,15 @@ export function UserManagement() {
     }
   };
 
-  const handleEditUser = (userId) => {
-    const user = users.find(u => u.id === userId);
-    if (user) {
-      setEditingUser(userId);
-      setNewRole(user.role);
-      setIsEditUserDialogOpen(true);
+  const handleDeleteMyUser = async(userId) => {
+    try {
+       const user=await deleteUser(userId)
+      showToast("User Deleted Succesfully")
+    } catch (error) {
+      showToast(error)
     }
+   
+   
   };
 
   const handleUpdateRole = () => {
@@ -336,9 +370,9 @@ export function UserManagement() {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'active':
+      case true:
         return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-      case 'inactive':
+      case false:
         return <Badge variant="secondary">Inactive</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
@@ -347,9 +381,9 @@ export function UserManagement() {
 
   const getInvitationStatusBadge = (status) => {
     switch (status) {
-      case 'pending':
+      case true:
         return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
-      case 'accepted':
+      case false:
         return <Badge className="bg-green-100 text-green-800"><Check className="h-3 w-3 mr-1" />Accepted</Badge>;
       case 'expired':
         return <Badge className="bg-red-100 text-red-800"><X className="h-3 w-3 mr-1" />Expired</Badge>;
@@ -359,16 +393,16 @@ export function UserManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div id='legacy-design-wrapper' className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl text-gray-900">User Management</h1>
           <p className="text-gray-600">Manage users and their dashboard access</p>
         </div>
         <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-          <DialogTrigger asChild>
+          <DialogTrigger  asChild>
             <Button>
-              <Mail className="h-4 w-4 mr-2" />
+              <Mail  className="legacy-design-wrapper h-4 w-4 mr-2" />
               Invite User
             </Button>
           </DialogTrigger>
@@ -396,8 +430,25 @@ export function UserManagement() {
                     <p className="text-sm text-red-600 mt-2">{emailError}</p>
                   )}
                 </div>
+                  <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                    name
+                  </Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setname(e.target.value)}
+                    placeholder="john doe"
+                    required
+                    disabled={isLoading}
+                    className="h-12 px-4 text-sm"
+                  />
+                  {emailError && (
+                    <p className="text-sm text-red-600 mt-2">{emailError}</p>
+                  )}
+                
 
-                <div className="space-y-3">
+                {/* <div className="space-y-3">
                   <Label htmlFor="role" className="text-sm font-medium text-gray-700">
                     Role
                   </Label>
@@ -410,7 +461,7 @@ export function UserManagement() {
                       <SelectItem value="admin">Administrator</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </div> */}
               </div>
               
               <Alert className="bg-blue-50 border-blue-200 p-4 mt-6">
@@ -452,13 +503,13 @@ export function UserManagement() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Users className="h-5 w-5 mr-2" />
-            Active Users ({mockUsers.length})
+            Active Users ({users.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {mockUsers.map((user) => (
-              <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+            {users.map((user) => (
+              <div key={user._id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center space-x-4">
                   <div className="bg-blue-100 p-2 rounded-full">
                     <Users className="h-4 w-4 text-blue-600" />
@@ -467,7 +518,7 @@ export function UserManagement() {
                     <h3 className="text-sm text-gray-900">{user.name}</h3>
                     <p className="text-xs text-gray-500">{user.email}</p>
                     <div className="flex items-center space-x-2 mt-1">
-                      {getStatusBadge(user.status)}
+                      {getStatusBadge(user.isActive)}
                       <Badge variant="outline" className="text-xs">
                         {user.role}
                       </Badge>
@@ -483,7 +534,7 @@ export function UserManagement() {
                     Access to {getUserAccess(user.id).length} dashboard(s)
                   </p>
                   <div className="flex items-center justify-end space-x-2 mt-2">
-                    {user.role !== 'admin' && (
+                    {user.role !== 'ADMIN' && (
                       <Button 
                         variant="outline" 
                         size="sm"
@@ -497,10 +548,10 @@ export function UserManagement() {
                     <Button 
                       variant="outline"
                       size="sm"
-                      onClick={() => handleEditUser(user.id)}
+                      onClick={() => handleDeleteMyUser(user._id)}
                       className="h-8 px-3 text-xs"
                     >
-                      Edit User
+                     {loading ? 'Deleting…' : 'Delete user'}
                     </Button>
                   </div>
                 </div>
@@ -508,6 +559,12 @@ export function UserManagement() {
             ))}
           </div>
         </CardContent>
+
+
+
+
+
+
       </Card>
 
       {/* Pending Invitations */}
@@ -515,16 +572,16 @@ export function UserManagement() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Mail className="h-5 w-5 mr-2" />
-            Pending Invitations ({invitations.length})
+            Pending Invitations ({pendingNumbers.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {invitations.length === 0 ? (
+          {pendingNumbers.length === 0 ? (
             <p className="text-gray-500 text-center py-4">No pending invitations</p>
           ) : (
             <div className="space-y-4">
-              {invitations.map((invitation) => (
-                <div key={invitation.id} className="flex items-center justify-between p-4 border rounded-lg">
+              {pendingNumbers.map((invitation) => (
+                <div key={invitation._id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="bg-orange-100 p-2 rounded-full">
                       <Mail className="h-4 w-4 text-orange-600" />
@@ -532,17 +589,17 @@ export function UserManagement() {
                     <div>
                       <h3 className="text-sm text-gray-900">{invitation.email}</h3>
                       <p className="text-xs text-gray-500">
-                        Invited on {new Date(invitation.invitedAt).toLocaleDateString()}
+                        Invited on {new Date(invitation.createdAt).toLocaleDateString()}
                       </p>
                       <div className="mt-1">
-                        {getInvitationStatusBadge(invitation.status)}
+                        {getInvitationStatusBadge(invitation.isActive)}
                       </div>
                     </div>
                   </div>
                   
-                  <div className="text-right space-y-1">
+                  {/* <div className="text-right space-y-1">
                     <p className="text-xs text-gray-500">
-                      Expires: {new Date(invitation.expiresAt).toLocaleDateString()}
+                      Expires: {new Date(invitation.inviteExpiresAt).toLocaleDateString()}
                     </p>
                     <Button 
                       variant="outline" 
@@ -553,7 +610,7 @@ export function UserManagement() {
                       <X className="h-3 w-3 mr-1" />
                       Delete
                     </Button>
-                  </div>
+                  </div> */}
                 </div>
               ))}
             </div>
