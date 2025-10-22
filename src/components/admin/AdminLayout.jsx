@@ -34,7 +34,7 @@ export function AdminLayout({ children, currentTab, setCurrentTab, initialCollap
   const menuItems = [
     { id: 'overview', icon: Home, label: 'Overview' },
     { id: 'dashboards', icon: Monitor, label: 'Dashboards' },
-    { id: 'reports', icon: FileText, label: 'Reports' },
+    // { id: 'reports', icon: FileText, label: 'Reports' },
     { id: 'users', icon: Users, label: 'Users' },
     { id: 'settings', icon: Settings, label: 'Settings' }
   ];

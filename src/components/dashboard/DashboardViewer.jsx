@@ -32,20 +32,22 @@ import {
 } from '../icons/Icons';
 import { useUserManagement } from '../hooks/useUserManagement';
 import { useDashboards } from '../DashboardContext';
+import { useNavigate } from 'react-router-dom';
 
 
 
 export function DashboardViewer({ dashboardId }) {
   const { user } = useAuth();
+  const navigate=useNavigate()
   const { showToast } = useToast();
-  const {dashboardById,getDashboardById}=useDashboards()
+  const {dashboardById,getDashboardById,loading}=useDashboards()
   useEffect(() => {
     getDashboardById(dashboardId)
   
    
   }, [])
-  
-  console.log("dashboardId",dashboardById)
+  if(!loading)   console.log("dashboardId",dashboardById)
+
   const { 
     dashboards, 
     comments, 
@@ -78,21 +80,21 @@ export function DashboardViewer({ dashboardId }) {
   const isFavorite = dashboard ? favorites.includes(dashboard.id) : false;
 
   useEffect(() => {
-    if (dashboard && user && !hasTrackedView.current) {
+    if (dashboardById?.dashboard && user && !hasTrackedView.current) {
       // Track page view only once
-      trackUsage(dashboard.id, 'view');
+      // trackUsage(dashboardById?.dashboard?._id, 'view');
       hasTrackedView.current = true;
     }
-  }, [dashboard?.id, user?.id, trackUsage]);
+  }, [dashboardById?.dashboard?.id, user?._id, trackUsage]);
 
   // Reset loading state when dashboard changes
   useEffect(() => {
-    if (dashboard) {
+    if (dashboardById) {
       setIsLoading(true);
       setHasError(false);
       hasTrackedView.current = false;
     }
-  }, [dashboard?.id]);
+  }, [dashboardById?.dashboard?.id]);
 
   const handleToggleFavorite = () => {
     if (!dashboard) return;
@@ -138,11 +140,11 @@ export function DashboardViewer({ dashboardId }) {
 
   // Initialize access management state when dialog opens
   useEffect(() => {
-    if (isManageAccessOpen && dashboard) {
-      setSelectedUsers([...dashboard.accessUsers]);
+    if (isManageAccessOpen && dashboardById) {
+      setSelectedUsers([...dashboardById?.dashboard?.accessUsers]);
       setSelectedDepartments([...dashboard.accessDepartments || []]);
     }
-  }, [isManageAccessOpen, dashboard]);
+  }, [isManageAccessOpen, dashboardById]);
 
   const handleRemoveUserAccess = (userId) => {
     if (!dashboard) return;
@@ -174,7 +176,8 @@ export function DashboardViewer({ dashboardId }) {
   };
 
  
-  const {users} = useUserManagement
+  const {users} = useUserManagement()
+  // const {user}=useAuth()
    const allUsers=users
   // const availableUsers = allUsers.filter(u => u.role !== 'ADMIN'); // Don't show admins since they have access to everything
 
@@ -199,8 +202,14 @@ export function DashboardViewer({ dashboardId }) {
     
     return <div dangerouslySetInnerHTML={{ __html: processedContent }} />;
   };
-
-  if (!dashboard) {
+ if (loading  ) {
+   return(
+    <div>
+      loading dashboard
+    </div>
+   )
+ }
+  if (!dashboardById) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="max-w-md">
@@ -218,10 +227,15 @@ export function DashboardViewer({ dashboardId }) {
       </div>
     );
   }
-
+console.log("userrrrrindashboardview",user)
   // Check if user has access to this dashboard
-  const hasAccess = user?.role === 'admin' || dashboard.accessUsers.includes(user?.id || '');
-  
+  // const hasAccess = user?.role === 'admin' || dashboard.accessUsers.includes(user?.id || '');
+const hasAccess = dashboardById?.dashboard?.accessUsers?.some(
+  (u) => u._id === (user?._id || '')
+);  
+console.log("has access",hasAccess)
+console.log("dashboard accuess users",dashboardById?.dashboard?.accessUsers)
+console.log("dashboad by id",dashboardById)
   if (!hasAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -245,26 +259,27 @@ export function DashboardViewer({ dashboardId }) {
     <div id='legacy-design-wrapper' className="space-y-6">
       {/* Dashboard Title and Actions */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl text-gray-900">{dashboard.title}</h1>
+        <h1 className="text-2xl text-gray-900">{dashboardById?.dashboard?.title}</h1>
         
         <div className="flex items-center space-x-3">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => {
-              if (user?.role === 'admin') {
-                (window).navigate('admin', { tab: 'dashboards' });
-              } else {
-                (window).navigate('user', { tab: 'browse' });
-              }
-            }}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Dashboards</span>
-          </Button>
+      <Button 
+  variant="ghost" 
+  size="sm" 
+  onClick={() => {
+    if (user?.role === 'ADMIN') {
+      navigate('/admin/dashboards');   // ✅ Correct route for admin
+    } else {
+      navigate('/user/browse');         // ✅ Correct route for user
+    }
+  }}
+  className="flex items-center space-x-2"
+>
+  <ArrowLeft className="h-4 w-4" />
+  <span>Back to Dashboards</span>
+</Button>
+
           
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             onClick={handleToggleFavorite}
@@ -272,7 +287,7 @@ export function DashboardViewer({ dashboardId }) {
           >
             <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-current' : ''}`} />
             {isFavorite ? 'Favorited' : 'Add to Favorites'}
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -282,19 +297,19 @@ export function DashboardViewer({ dashboardId }) {
             <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative">
               {/* Power BI Embedded Dashboard */}
               <iframe
-                src={dashboard.embedUrl}
+                src={dashboardById?.dashboard.embedUrl}
                 className="w-full h-full border-0"
                 allowFullScreen
-                title={`${dashboard.title} - Power BI Dashboard`}
+                title={`${dashboardById?.dashboard?.title} - Power BI Dashboard`}
                 onLoad={() => {
                   setIsLoading(false);
                   setHasError(false);
-                  console.log(`Power BI dashboard "${dashboard.title}" loaded successfully`);
+                  console.log(`Power BI dashboard "${dashboardById?.dashboard?.title}" loaded successfully`);
                 }}
                 onError={() => {
                   setIsLoading(false);
                   setHasError(true);
-                  console.error(`Failed to load Power BI dashboard: ${dashboard.title}`);
+                  console.error(`Failed to load Power BI dashboard: ${dashboardById?.dashboard?.title}`);
                 }}
               />
               
@@ -316,7 +331,7 @@ export function DashboardViewer({ dashboardId }) {
                             setIsLoading(true);
                             setHasError(false);
                             // Force iframe reload
-                            const iframe = document.querySelector(`iframe[title*="${dashboard.title}"]`) ;
+                            const iframe = document.querySelector(`iframe[title*="${dashboardById?.dashboard?.title}"]`) ;
                             if (iframe) {
                               iframe.src = iframe.src;
                             }
@@ -327,7 +342,7 @@ export function DashboardViewer({ dashboardId }) {
                           Try Again
                         </Button>
                         <Button 
-                          onClick={() => window.open(dashboard.embedUrl, '_blank')}
+                          onClick={() => window.open(dashboardById?.dashboard?.embedUrl, '_blank')}
                           className="w-full"
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
@@ -351,7 +366,7 @@ export function DashboardViewer({ dashboardId }) {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="text-sm">
-                <p className="text-gray-600 mb-1">{dashboard.description}</p>
+                <p className="text-gray-600 mb-1">{dashboardById?.dashboard?.description}</p>
               </div>
               
               <Separator />
@@ -369,14 +384,14 @@ export function DashboardViewer({ dashboardId }) {
                     <Building className="h-3 w-3 mr-1" />
                     Department
                   </span>
-                  <span>{dashboard.department}</span>
+                  <span>{dashboardById?.dashboard?.company?.name}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center">
                     <Calendar className="h-3 w-3 mr-1" />
-                    Last Modified
+                    createdAt
                   </span>
-                  <span>{new Date(dashboard.lastModified).toLocaleDateString()}</span>
+                  <span>{new Date(dashboardById?.dashboard?.createdAt).toLocaleDateString()}</span>
                 </div>
                 
                 <Separator />

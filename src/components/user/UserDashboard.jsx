@@ -31,8 +31,8 @@ export function UserDashboard({ initialTab = 'favorites' }) {
         return <FavoritesDashboard />;
       case 'browse':
         return <DashboardBrowser />;
-      case 'reports':
-        return <ReportBrowser />;
+      // case 'reports':
+      //   return <ReportBrowser />;
       case 'settings':
         return <UserProfile />;
       default:

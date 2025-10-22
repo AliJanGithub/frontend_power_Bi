@@ -89,11 +89,11 @@ export function UserLayout({ children, currentTab, setCurrentTab, initialCollaps
       icon: Monitor, 
       label: 'Dashboards'
     },
-    { 
-      id: 'reports', 
-      icon: FileText, 
-      label: 'Reports'
-    },
+    // { 
+    //   id: 'reports', 
+    //   icon: FileText, 
+    //   label: 'Reports'
+    // },
     { 
       id: 'settings', 
       icon: Settings, 

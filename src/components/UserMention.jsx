@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useData } from './DataContext';
 import { Button } from './ui/button';
 import { User, AtSign } from './icons/Icons';
+import { useAuth } from './AuthContext';
 
 
 
@@ -18,8 +19,8 @@ export function UserMention({
   const [taggedUsers, setTaggedUsers] = useState([]);
   const textareaRef = useRef(null);
   const suggestionsRef = useRef(null);
-
-  const users = getAllUsers();
+const {userRoleUser}=useAuth()
+  const users =userRoleUser
 
   useEffect(() => {
     const handleClickOutside = (event) => {

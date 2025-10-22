@@ -47,7 +47,7 @@ const [pendingSearch, setPendingSearch] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const viewMode = preferences.viewMode;
-
+console.log("dashboards    itttt",dashboards)
    const handleSearch = () => {
   // apply trimmed value to the real searchQuery which powers the list
   setSearchQuery(pendingSearch.trim());
@@ -84,7 +84,7 @@ const handleInputKeyDown = (e) => {
 //   }
 // };
   const handleViewDashboard = (dashboardId) => {
-    // ✅ Correct navigation to dashboard viewer
+    // ✅ Correct navigation to dashboard viewerifra
     navigate(`/view-dashboard/${dashboardId}`);
   };
 
@@ -251,30 +251,31 @@ const handleInputKeyDown = (e) => {
                         : 'text-gray-400 hover:text-red-600'
                     }`}
                   >
-                    <Heart 
+                    {/* <Heart 
                       className={`h-4 w-4 ${
                         favorites.includes(dashboard._id) ? 'fill-current' : ''
                       }`} 
-                    />
+                    /> */}
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600 text-sm truncate">{dashboard.description}</p>
+                <p className="text-gray-600 text-sm truncate">{dashboard?.description}</p>
                 
                 <div className="space-y-2 text-xs text-gray-500 border-t pt-3">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center">
                       <User className="h-3 w-3 mr-1" />
-                      Created by Admin
+                      Created by 
                     </span>
+                    <span>{dashboard?.createdBy?.name}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
-                      Last Modified
+                      Created at
                     </span>
-                    <span>{new Date(dashboard.lastModified).toLocaleDateString()}</span>
+                    <span>{new Date(dashboard?.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
 
@@ -296,7 +297,7 @@ const handleInputKeyDown = (e) => {
             <div className="grid grid-cols-12 gap-4 items-center text-sm text-gray-600">
               <div className="col-span-4">Dashboard</div>
               <div className="col-span-3">company</div>
-              {/* <div className="col-span-4">Accessed by</div> */}
+              <div className="col-span-4">Accessed by</div>
               <div className="col-span-1"></div>
             </div>
           </div>
@@ -328,14 +329,14 @@ const handleInputKeyDown = (e) => {
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-gray-500">Accessed by</span>
                       <div className="flex -space-x-1">
-                        {dashboard.accessUsers.slice(0, 4).map((userId, index) => {
-                          const users = user.find(u => u.id === userId);
+                        {dashboard.accessUsers.slice(0, 4).map((user, index) => {
+                          const users = user.find(u => u._id === userId);
                           return (
-                            <Tooltip key={userId}>
+                            <Tooltip key={user?._id}>
                               <TooltipTrigger asChild>
                                 <div className="w-6 h-6 bg-gray-300 rounded-full border-2 border-white flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
                                   <span className="text-xs text-gray-600 font-medium">
-                                    {users?.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
+                                    {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() }
                                   </span>
                                 </div>
                               </TooltipTrigger>
@@ -353,6 +354,49 @@ const handleInputKeyDown = (e) => {
                       </div>
                     </div>
                   </div> */}
+                  {/* Access Users - 4 cols */}
+{dashboard?.accessUsers && dashboard.accessUsers.length > 0 ? (
+  <div className="col-span-4">
+    <div className="flex items-center space-x-2">
+      <span className="text-xs text-gray-500">Accessed by</span>
+      <div className="flex -space-x-1">
+        {dashboard.accessUsers.slice(0, 4).map((accessUser, index) => {
+          const initials = accessUser?.name
+            ? accessUser.name
+                .split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+            : '?';
+          return (
+            <Tooltip key={accessUser._id || index}>
+              <TooltipTrigger asChild>
+                <div className="w-6 h-6 bg-gray-300 rounded-full border-2 border-white flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
+                  <span className="text-xs text-gray-600 font-medium">
+                    {initials}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="text-sm">{accessUser?.name || 'Unknown User'}</p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+        {dashboard.accessUsers.length > 4 && (
+          <div className="w-6 h-6 bg-gray-100 rounded-full border-2 border-white flex items-center justify-center">
+            <span className="text-xs text-gray-500">
+              +{dashboard.accessUsers.length - 4}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+) : (
+  <p className="text-xs text-gray-400">No access users found</p>
+)}
+
                   
                   {/* Actions - 1 col */}
                   <div className="col-span-1 flex items-center justify-end space-x-2">
@@ -361,7 +405,7 @@ const handleInputKeyDown = (e) => {
                       size="sm"
                       onClick={() => handleToggleFavorite(dashboard._id, dashboard.title)}
                       className={`h-8 w-8 p-1 ${
-                        favorites.includes(dashboard.id)
+                        favorites.includes(dashboard?._id)
                           ? 'text-red-600 hover:text-red-700'
                           : 'text-gray-400 hover:text-red-600'
                       }`}

@@ -46,11 +46,14 @@ export const DashboardProvider = ({ children }) => {
 
   // ✅ Get single dashboard by ID
   const getDashboardById = async (id) => {
+    console.log("idddd",id)
     setLoading(true);
     setError(null);
     try {
       const response = await api.get(`/dashboards/${id}`);
-      setDashboardId(response)
+      console.log("dashboardbyid main context func",response?.data?.data)
+      setDashboardId(response?.data?.data)
+      console.log("dashboardbyid main context func",response?.data?.data?.dashboards,response)
       return response.data?.data;
     } catch (err) {
       console.error('Get dashboard failed:', err);

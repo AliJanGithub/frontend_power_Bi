@@ -36,13 +36,8 @@ import { useUserManagement } from '../hooks/useUserManagement';
 
 export function DashboardManagement() {
   const { user,userRoleUser,loadings } = useAuth();
-  const {users}=useUserManagement()
-  const { showToast } = useToast();
-  const { preferences, updatePreferences } = useSettings();
-  const { departments, addDashboard,  } = useData();
-
-
-  const { dashboards,
+  console.log("userroelUsers",userRoleUser)
+    const { dashboards,
         loading,
         error,
         fetchDashboards,
@@ -52,6 +47,13 @@ export function DashboardManagement() {
         deleteDashboard,
         assignDashboard,
         unassignDashboard, }=useDashboards()
+  const {users}=useUserManagement()
+  const { showToast } = useToast();
+  const { preferences, updatePreferences } = useSettings();
+  const { departments, addDashboard,  } = useData();
+
+
+
 
 
   const allUsers = [
@@ -75,6 +77,7 @@ export function DashboardManagement() {
   },]
 
 console.log("my dashboard users",users)
+console.log("my dashboard in dashboard management ",dashboards)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingDashboard, setEditingDashboard] = useState(null);
@@ -148,9 +151,9 @@ const handleAssignUsers = async () => {
     // if (!formData.department) errors.department = 'Department is required';
     
     // Validate Power BI embed URL format
-    if (formData.embedUrl && !formData.embedUrl.includes('powerbi.com')) {
-      errors.embedUrl = 'Please enter a valid Power BI embed URL';
-    }
+    // if (formData.embedUrl && !formData.embedUrl.includes('powerbi.com')) {
+    //   errors.embedUrl = 'Please enter a valid Power BI embed URL';
+    // }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -197,7 +200,8 @@ const handleAssignUsers = async () => {
     } else {
       try {
          const result=await createDashboard(dashboardData);
- if (result && (result.success || result._id)) {
+         console.log("resultttttttttt",result)
+ if (result.success ) {
   showToast('✅ Dashboard added successfully');
   await fetchDashboards();
   setIsAddDialogOpen(false);
@@ -556,15 +560,15 @@ const handleChange = useCallback((field, value) => {
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {dashboards.length>0 && dashboards.map((dashboard) => (
-            <Card key={dashboard._id} className="hover:shadow-lg transition-all duration-200">
+            <Card key={dashboard?._id} className="hover:shadow-lg transition-all duration-200">
               <CardHeader>
                 <div className="space-y-1">
-                  <CardTitle className="text-lg">{dashboard.title || " "}</CardTitle>
+                  <CardTitle className="text-lg">{dashboard?.title || "untitled "}</CardTitle>
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">Dashboard</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600 text-sm truncate">{dashboard.description || " "}</p>
+                <p className="text-gray-600 text-sm truncate">{dashboard?.description || "undescriptin "}</p>
                 
                 <Separator />
 
@@ -574,21 +578,21 @@ const handleChange = useCallback((field, value) => {
                       <Building className="h-3 w-3 mr-1" />
                       Department
                     </span>
-                    <span>{dashboard?.company?.name || " "}</span>
+                    <span>{dashboard?.company?.name || " no company"}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center">
                       <Users className="h-3 w-3 mr-1" />
                       Access Users
                     </span>
-                    <span>{dashboard.accessUsers.length || " "}</span>
+                    <span>{dashboard?.accessUsers?.length || " 0 "}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
                       created at
                     </span>
-                    <span>{new Date(dashboard.createdAt).toLocaleDateString()  || " "}</span>
+                    <span>{new Date(dashboard?.createdAt).toLocaleDateString()  || "not available "}</span>
                   </div>
                 </div>
 
@@ -694,7 +698,7 @@ const handleChange = useCallback((field, value) => {
                   <div className="col-span-3">
                     <div className="flex items-center space-x-2">
                       <div className="flex -space-x-1">
-                        {dashboard.accessUsers.length > 0 && dashboard.accessUsers.slice(0, 3).map((userId, index) => {
+                        {dashboard?.accessUsers?.length > 0 && dashboard?.accessUsers.slice(0, 3).map((userId, index) => {
                           const user = allUsers.find(u => u.id === userId);
                           return (
                             <Tooltip key={userId}>

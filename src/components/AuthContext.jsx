@@ -13,8 +13,9 @@ export function AuthProvider({ children }) {
   const [error,setError]=useState(null)
 
   useEffect(() => {
-    if(!localStorage.getItem('accesstoken')) return
+    if(!localStorage.getItem('accessToken')) return
    getUsers()
+   console.log("useeffect runs")
     setLoading(false);
   }, []);
 

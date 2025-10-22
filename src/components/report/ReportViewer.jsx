@@ -210,7 +210,7 @@ export function ReportViewer({ reportId }) {
         </div>
         
         <div className="flex items-center space-x-3">
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             onClick={handleToggleFavorite}
@@ -218,7 +218,7 @@ export function ReportViewer({ reportId }) {
           >
             <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-current' : ''}`} />
             {isFavorite ? 'Favorited' : 'Add to Favorites'}
-          </Button>
+          </Button> */}
 
           <Button 
             onClick={() => window.open(report.embedUrl, '_blank')}
