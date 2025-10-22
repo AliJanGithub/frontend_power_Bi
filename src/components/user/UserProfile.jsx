@@ -18,6 +18,7 @@ export function UserProfile() {
   const { showToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [loading,setLoading]=useState(false)
   const [formData, setFormData] = useState({
     name: user?.name || ''
   });
@@ -29,20 +30,32 @@ export function UserProfile() {
   const [passwordErrors, setPasswordErrors] = useState({});
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
-  const handleSave = () => {
-    if (!formData.name.trim()) {
-      showToast('Name is required', 'error');
-      return;
+  const handleSave = async () => {
+  if (!formData.name.trim()) {
+    showToast('Name is required', 'error');
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await api.put('/users/update/name', { name: formData.name });
+
+    if (response?.data?.success) {
+      showToast('Settings updated successfully', 'success');
+      console.log('Name updated:', response.data.data);
+    } else {
+      showToast(response?.data?.message || 'Failed to update name', 'error');
     }
-
-    updateUser({
-      ...user,
-      name: formData.name
-    });
-
-    showToast('Settings updated successfully');
+  } catch (err) {
+    console.error('Update name failed:', err);
+    showToast(err.response?.data?.message || err.message, 'error');
+  } finally {
+    setLoading(false);
     setIsEditing(false);
-  };
+  }
+};
+
 
   const handleCancel = () => {
     setFormData({
@@ -139,12 +152,12 @@ export function UserProfile() {
                   <User className="h-5 w-5 mr-2 text-primary" />
                   Profile Information
                 </CardTitle>
-                {!isEditing && (
+                {/* {!isEditing && (
                   <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                     <Edit className="h-4 w-4 mr-2" />
                     Edit
                   </Button>
-                )}
+                )} */}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -174,7 +187,7 @@ export function UserProfile() {
                 <div className="flex space-x-2 pt-4">
                   <Button onClick={handleSave}>
                     <Check className="h-4 w-4 mr-2" />
-                    Save Changes
+                    {loading ? "Saving " : "Save Changes"   }
                   </Button>
                   <Button variant="outline" onClick={handleCancel}>
                     <X className="h-4 w-4 mr-2" />

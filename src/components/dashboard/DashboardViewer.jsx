@@ -642,7 +642,7 @@ console.log("dashboad by id",dashboardById)
               <CardHeader>
                 <CardTitle className="flex items-center text-lg">
                   <MessageSquare className="h-5 w-5 mr-2" />
-                  Comments ({loadingComments?.length})
+                  Comments ({comments?.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -703,8 +703,8 @@ console.log("dashboad by id",dashboardById)
   <Button
     type="submit"
     className="w-full"
-    // disabled={!newComment.trim() || isSubmittingComment}
-     disabled={isSubmittingComment}
+    disabled={!newComment.trim() || isSubmittingComment}
+    //  disabled={isSubmittingComment}
   >
     <Send className="h-4 w-4 mr-2" />
     {isSubmittingComment ? 'Posting...' : 'Post Comment'}
@@ -717,7 +717,7 @@ console.log("dashboad by id",dashboardById)
                   <div className="h-full flex flex-col">
                     <div className="pb-3 border-b border-gray-200">
                       <h4 className="font-medium text-gray-900">
-                        Discussion ({dashboardComments.length})
+                        Discussion ({comments?.length})
                       </h4>
                       <p className="text-sm text-gray-500 mt-1">Recent comments and conversations</p>
                     </div>
@@ -744,11 +744,12 @@ console.log("dashboad by id",dashboardById)
                                     <User className="h-3 w-3 text-white" />
                                   </div>
                                   <div>
-                                    <span className="text-sm font-medium text-gray-900">{comment?.userName}</span>
+                                    <span className="text-sm font-medium text-gray-900">{comment?.user?.name.split(' ')[0]}</span>
                                     <p className="text-xs text-gray-500">
                                       {new Date(comment.createdAt).toLocaleDateString()} at {new Date(comment?.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                   </div>
+                                  <div>{comment?.user?.email}</div>
                                 </div>
                                 {canDeleteComment(comment) && (
                                   <Button
@@ -763,7 +764,7 @@ console.log("dashboad by id",dashboardById)
                                 )}
                               </div>
                               <div className="text-sm text-gray-700 leading-relaxed">
-                                {renderCommentContent(comment.content, comment.taggedUsers || [])}
+                               <span class="inline-flex items-center px-1.5 py-0.5 bg-primary/10 text-primary rounded text-sm font-medium">{comment?.message}</span>
                               </div>
                             </div>
                           ))}
