@@ -137,10 +137,10 @@ const handleSubmit = async (e) => {
           <CardContent className="p-4">
             <div className="text-center space-y-2">
               <p className="text-sm font-medium text-gray-700">Demo Credentials:</p>
-              <div className="text-xs text-gray-600 space-y-1">
+              {/* <div className="text-xs text-gray-600 space-y-1">
                 <p className="bg-white/50 rounded px-2 py-1">Admin: alijan061333@gmail.com / SuperAdmin@123</p>
-                {/* <p className="bg-white/50 rounded px-2 py-1">User: john.doe@company.com / user123</p> */}
-              </div>
+                <p className="bg-white/50 rounded px-2 py-1">User: john.doe@company.com / user123</p>
+              </div> */}
             </div>
           </CardContent>
         </Card>
