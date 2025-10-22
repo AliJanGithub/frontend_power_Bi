@@ -37,6 +37,7 @@ import { useUserManagement } from '../hooks/useUserManagement';
 export function DashboardManagement() {
   const { user,userRoleUser,loadings } = useAuth();
   console.log("userroelUsers",userRoleUser)
+  const navigate=useNavigate()
     const { dashboards,
         loading,
         error,
@@ -618,7 +619,7 @@ const handleChange = useCallback((field, value) => {
                 {/* </div> */}
                 <div className="grid grid-cols-2 gap-2">
   <Button
-    onClick={() => (window).navigate('view-dashboard', { id: dashboard._id })}
+    onClick={() =>navigate(`view-dashboard/${dashboard?._id}`)}
   >
     <Eye className="h-4 w-4 mr-2" />
     View
@@ -721,14 +722,14 @@ const handleChange = useCallback((field, value) => {
                           </div>
                         )}
                       </div>
-                      <span className="text-xs text-gray-500">{dashboard.accessUsers.length} users</span>
+                      <span className="text-xs text-gray-500">{dashboard?.accessUsers?.length} users</span>
                     </div>
                   </div>
                   
                   {/* Actions - 2 cols */}
                   <div className="col-span-2 flex items-center justify-end space-x-2">
                     <Button
-                      onClick={() => (window).navigate('view-dashboard', { id: dashboard._id })}
+                      onClick={() => navigate(`view-dashboard/${dashboard?._id}`)}
                       size="sm"
                       className="h-8 px-3 text-xs"
                     >

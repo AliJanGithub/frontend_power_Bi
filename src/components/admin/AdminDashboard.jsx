@@ -13,8 +13,8 @@ export function AdminDashboard() {
     switch (currentTab) {
       case 'dashboards':
         return <DashboardManagement />;
-      case 'reports':
-        return <ReportManagement />;
+      // case 'reports':
+      //   return <ReportManagement />;
       case 'users':
         return <UserManagement />;
       case 'settings':

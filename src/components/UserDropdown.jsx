@@ -6,13 +6,14 @@ import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { User, ChevronDown, LogOut, Settings, Mail2, Shield } from './icons/Icons';
+import { useNavigate } from 'react-router-dom';
 
 export function UserDropdown() {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const buttonRef = useRef(null);
-
+const navigate=useNavigate()
   // Calculate dropdown position
   const updatePosition = () => {
     if (buttonRef.current) {
@@ -50,7 +51,7 @@ export function UserDropdown() {
 
   const handleLogout = () => {
     logout();
-    (window ).navigate('login');
+    navigate('login');
     setIsOpen(false);
   };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState,useEffect } from 'react';
 import { useData } from '../DataContext';
 import { Card, CardHeader, CardContent, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
@@ -43,7 +43,10 @@ const departmentColors = [
 ];
 
 export function AdminOverview({ setCurrentTab }) {
+  const [pendingInvite,setPendingInvitations]=useState(0)
   const {  reports, invitations } = useData();
+
+
   const { // Data
    
     users,
@@ -65,9 +68,10 @@ export function AdminOverview({ setCurrentTab }) {
   const totalDashboards = dashboards.length
   const totalReports = reports.filter(r => r.isActive).length;
   const totalUsers = mockTotalUsers;
-  const pendingInvitations = invitations.filter(inv => inv.status === 'pending').length;
+  // const pendingInvitations = invitations.filter(inv => inv.status === 'pending').length;
 
   // Process department data for pie charts
+  console.log("admin overview userssssssss,",users)
   const getDepartmentData = (items, type) => {
     if (type === 'users') {
       return Object.entries(mockUsersByDepartment).map(([dept, count], index) => ({
@@ -89,6 +93,16 @@ export function AdminOverview({ setCurrentTab }) {
   const dashboardsByDept = getDepartmentData(dashboards, 'dashboards');
   const reportsByDept = getDepartmentData(reports, 'reports');
   const usersByDept = getDepartmentData([], 'users');
+const handlePendingInvitations = () => {
+  const pendingCount = users?.filter(user => user?.isActive === false).length || 0;
+  setPendingInvitations(pendingCount);
+};
+
+useEffect(() => {
+  
+  handlePendingInvitations()
+ 
+}, [])
 
   return (
     <div id='legacy-design-wrapper' className="space-y-6">
@@ -120,7 +134,7 @@ export function AdminOverview({ setCurrentTab }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Pending Invitations</p>
-                <p className="text-3xl font-semibold text-gray-900">{pendingInvitations}</p>
+                <p className="text-3xl font-semibold text-gray-900">{pendingInvite}</p>
                 <p className="text-xs text-gray-500 mt-1">Awaiting response</p>
               </div>
               <div className="bg-orange-100 p-4 rounded-full">
@@ -145,7 +159,7 @@ export function AdminOverview({ setCurrentTab }) {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
+        {/* <Card className="hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -158,7 +172,7 @@ export function AdminOverview({ setCurrentTab }) {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Quick Actions */}
@@ -185,22 +199,26 @@ export function AdminOverview({ setCurrentTab }) {
               </div>
             </Button>
             
-            <Button 
-              variant="outline"
-              onClick={() => setCurrentTab?.('dashboards')}
-              className="h-auto p-6 flex items-center justify-start space-x-4 text-left hover:bg-primary/5"
-              size="lg"
-            >
-              <div className="bg-primary/10 p-3 rounded-full">
-                <Monitor className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="font-medium">Add New Dashboard</p>
-                <p className="text-sm text-gray-600">Create and configure a new Power BI dashboard</p>
-              </div>
-            </Button>
+      <Button
+  variant="outline"
+  onClick={() => setCurrentTab?.('dashboards')}
+  className="h-auto p-6 flex items-center justify-start space-x-4 text-left hover:bg-primary/5 max-w-full"
+  size="lg"
+>
+  <div className="bg-primary/10 p-3 rounded-full flex-shrink-0">
+    <Monitor className="h-6 w-6 text-primary" />
+  </div>
 
-            <Button 
+  <div className="flex flex-col flex-1 min-w-0">
+    <p className="font-medium">Add New Dashboard</p>
+    <p className="text-sm text-gray-600 break-words whitespace-normal leading-snug">
+      Create and configure a new Power BI dashboard
+    </p>
+  </div>
+</Button>
+
+
+            {/* <Button 
               variant="outline"
               onClick={() => setCurrentTab?.('reports')}
               className="h-auto p-6 flex items-center justify-start space-x-4 text-left hover:bg-primary/5"
@@ -213,7 +231,7 @@ export function AdminOverview({ setCurrentTab }) {
                 <p className="font-medium">Add New Report</p>
                 <p className="text-sm text-gray-600">Upload and configure a new Excel report</p>
               </div>
-            </Button>
+            </Button> */}
           </div>
         </CardContent>
       </Card>

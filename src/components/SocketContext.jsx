@@ -15,8 +15,10 @@ export const SocketProvider = ({ children }) => {
     if (!token) return;
 
     // Use the same base URL as your backend
-    const apiUrl =
-      config?.backend_api?.replace('/api', '') || 'http://localhost:5000';
+    // const apiUrl =
+    //   config?.backend_api?.replace('/api', '') || 'http://localhost:5000';
+      const envApiUrl = import.meta.env.VITE_API_URL; // e.g. https://powerbibackendnodejs-production.up.railway.app/api
+    const apiUrl = envApiUrl?.replace('/api', '') || 'http://localhost:5000';
 
     // Initialize socket connection
     const newSocket = io(`${apiUrl}/comments`, {

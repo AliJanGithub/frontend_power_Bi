@@ -259,9 +259,9 @@ console.log("comments loading ...................",comments,loadingComments)
 console.log("userrrrrindashboardview",user)
   // Check if user has access to this dashboard
   // const hasAccess = user?.role === 'admin' || dashboard.accessUsers.includes(user?.id || '');
-const hasAccess = dashboardById?.dashboard?.accessUsers?.some(
+const hasAccess =  dashboardById?.dashboard?.accessUsers?.some(
   (u) => u._id === (user?._id || '')
-);  
+) || user.role==='ADMIN'
 console.log("has access",hasAccess)
 console.log("dashboard accuess users",dashboardById?.dashboard?.accessUsers)
 console.log("dashboad by id",dashboardById)

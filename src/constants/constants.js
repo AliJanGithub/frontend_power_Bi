@@ -1,3 +1,3 @@
 export const config={
-    backend_api:"http://localhost:5000"
+    backend_api:"https://powerbibackendnodejs-production.up.railway.app/api"
 }

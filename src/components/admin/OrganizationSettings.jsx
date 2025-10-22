@@ -17,19 +17,21 @@ import {
   Save,
   Info
 } from '../icons/Icons';
+import { useAuth } from '../AuthContext';
 
 export function OrganizationSettings() {
   const { settings, updateSettings, resetToDefaults } = useSettings();
   const { showToast } = useToast();
   const fileInputRef = useRef(null);
-  
+  const {user}=useAuth()
+  console.log("user organization ,admin here ,",user,user.company.name)
   const [formData, setFormData] = useState({
     companyName: settings.companyName,
     primaryColor: settings.primaryColor,
     secondaryColor: settings.secondaryColor
   });
   
-  const [previewLogo, setPreviewLogo] = useState<string | null>(settings.companyLogo);
+  const [previewLogo, setPreviewLogo] = useState(settings.companyLogo);
   const [hasChanges, setHasChanges] = useState(false);
 
   const handleInputChange = (field, value) => {
@@ -102,32 +104,57 @@ export function OrganizationSettings() {
       <div>
         <h1 className="text-2xl text-gray-900 mb-2">Organization Settings</h1>
         <p className="text-gray-600">Customize your organization's branding and appearance</p>
-      </div>
+      </div>{/* Company Information */}
+<Card>
+  <CardHeader>
+    <CardTitle className="flex items-center space-x-2">
+      <Building className="h-5 w-5 text-blue-600" />
+      <span className="text-lg font-semibold">Company Information</span>
+    </CardTitle>
+  </CardHeader>
 
-      {/* Company Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Building className="h-5 w-5" />
-            <span>Company Information</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="company-name">Company Name</Label>
-            <Input
-              id="company-name"
-              value={formData.companyName}
-              onChange={(e) => handleInputChange('companyName', e.target.value)}
-              placeholder="Enter your company name"
-              className="max-w-md"
-            />
-            <p className="text-sm text-gray-500">
-              This will be displayed in the portal header and login pages
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+  <CardContent className="space-y-4">
+    <div className="bg-gray-50 rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+        <span className="text-sm text-gray-500">Company Name</span>
+        <span className="font-medium text-gray-800">
+          {user?.company?.name || 'N/A'}
+        </span>
+      </div>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2">
+        <span className="text-sm text-gray-500">Created By</span>
+        <span className="font-medium text-gray-800">
+          {user?.company?.createdBy?.name || 'N/A'}
+        </span>
+      </div>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2">
+        <span className="text-sm text-gray-500">Creator Role</span>
+        <span className="font-medium text-gray-800">
+          {user?.company?.createdBy?.role || 'N/A'}
+        </span>
+      </div>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2">
+        <span className="text-sm text-gray-500">Creator Email</span>
+        <span className="font-medium text-gray-800">
+          {user?.company?.createdBy?.email || 'N/A'}
+        </span>
+      </div>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2">
+        {/* <span className="text-sm text-gray-500">Status</span> */}
+        <span
+          className={`font-semibold px-2 py-1 rounded-lg ${
+            user?.company?.isActive
+              ? 'text-green-700 bg-green-100'
+              : 'text-red-700 bg-red-100'
+          }`}
+        >
+          {/* {user?.company?.status ? 'Active' : 'Inactive'} */}
+        </span>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+
 
       {/* Company Logo */}
       <Card>
@@ -189,7 +216,7 @@ export function OrganizationSettings() {
       </Card>
 
       {/* Color Customization */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Palette className="h-5 w-5" />
@@ -246,7 +273,7 @@ export function OrganizationSettings() {
             </div>
           </div>
 
-          {/* Color Presets */}
+        
           <div className="space-y-3">
             <Label>Color Presets</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -275,10 +302,10 @@ export function OrganizationSettings() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+      {/* <div className="flex items-center justify-between pt-6 border-t border-gray-200">
         <Button
           variant="outline"
           onClick={handleReset}
@@ -296,7 +323,7 @@ export function OrganizationSettings() {
           <Save className="h-4 w-4" />
           <span>Save Changes</span>
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 }
