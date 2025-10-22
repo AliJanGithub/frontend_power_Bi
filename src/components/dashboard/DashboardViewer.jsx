@@ -34,6 +34,8 @@ import { useUserManagement } from '../hooks/useUserManagement';
 import { useDashboards } from '../DashboardContext';
 import { useNavigate } from 'react-router-dom';
 
+import { useComments } from '../hooks/useComments';
+
 
 
 export function DashboardViewer({ dashboardId }) {
@@ -48,13 +50,37 @@ export function DashboardViewer({ dashboardId }) {
   }, [])
   if(!loading)   console.log("dashboardId",dashboardById)
 
+const {  comments,
+    loadingComments,
+    error,
+    createComment,
+    updateComment,
+    deleteComment,
+    fetchComments,}=useComments(dashboardId)
+
+
+
+
+
+
+
+console.log("comments loading ...................",comments,loadingComments)
+
+
+
+
+  const handleSend = () => {
+    if (!newMsg.trim()) return;
+    sendComment(dashboardId, newMsg);
+    setNewMsg('');
+  };
   const { 
     dashboards, 
-    comments, 
+    // comments, 
     favorites, 
     toggleFavorite, 
     addComment, 
-    deleteComment, 
+    // deleteComment, 
     trackUsage,
     updateDashboard,
     getAllUsers,
@@ -105,22 +131,24 @@ export function DashboardViewer({ dashboardId }) {
     );
   };
 
-  const handleSubmitComment = async (e) => {
-    e.preventDefault();
-    if (!newComment.trim() || !dashboard) return;
+ const handleSubmitComment = async (e) => {
+  e.preventDefault();
+  // if (!newComment.trim() || dashboard) return;
 
-    setIsSubmittingComment(true);
-    try {
-      addComment(dashboard.id, newComment.trim(), taggedUsers);
-      setNewComment('');
-      setTaggedUsers([]);
-      showToast('Comment added successfully');
-    } catch (error) {
-      showToast('Failed to add comment', 'error');
-    } finally {
-      setIsSubmittingComment(false);
-    }
-  };
+  setIsSubmittingComment(true);
+  try {
+    const response=await createComment(newComment); // ✅ only message needed
+    setNewComment('');
+    console.log(response)
+    showToast('Comment added successfully');
+  } catch (error) {
+    showToast(`Failed to add comment ${error}`);
+    console.log(error)
+  } finally {
+    setIsSubmittingComment(false);
+  }
+};
+
 
   const handleCommentChange = (value, users) => {
     setNewComment(value);
@@ -182,8 +210,9 @@ export function DashboardViewer({ dashboardId }) {
   // const availableUsers = allUsers.filter(u => u.role !== 'ADMIN'); // Don't show admins since they have access to everything
 
   const renderCommentContent = (content, taggedUserIds) => {
-    const { getAllUsers } = useData();
-    const users = getAllUsers();
+    // const { getAllUsers } = useData();
+    // const {users}=useUserManagement()
+   
     
     let processedContent = content;
     
@@ -613,7 +642,7 @@ console.log("dashboad by id",dashboardById)
               <CardHeader>
                 <CardTitle className="flex items-center text-lg">
                   <MessageSquare className="h-5 w-5 mr-2" />
-                  Comments ({dashboardComments.length})
+                  Comments ({loadingComments?.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -625,7 +654,7 @@ console.log("dashboad by id",dashboardById)
                       <p className="text-sm text-gray-500 mt-1">Share your thoughts or ask questions</p>
                     </div>
                     
-                    <form onSubmit={handleSubmitComment} className="flex flex-col flex-1">
+                    {/* <form onSubmit={handleSubmitComment} className="flex flex-col flex-1">
                       <div className="flex-1 mb-4">
                         <UserMention
                           value={newComment}
@@ -633,6 +662,14 @@ console.log("dashboad by id",dashboardById)
                           placeholder="Add a comment... Use @username to mention someone"
                           rows={6}
                         />
+                            <Input
+                            type="text"
+                          value={newComment}
+                          onChange={handleCommentChange}
+                          placeholder="Add a comment... Use @username to mention someone"
+                          
+                        />
+                        
                         {taggedUsers.length > 0 && (
                           <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
                             <div className="text-xs text-blue-700 flex items-center">
@@ -651,7 +688,29 @@ console.log("dashboad by id",dashboardById)
                         <Send className="h-4 w-4 mr-2" />
                         {isSubmittingComment ? 'Posting...' : 'Post Comment'}
                       </Button>
-                    </form>
+                    </form> */}
+                    <form onSubmit={handleSubmitComment} className="flex flex-col flex-1">
+  <div className="flex-1 mb-4">
+    <Input
+      type="text"
+      value={newComment}
+      onChange={(e)=>setNewComment(e.target.value)}
+      placeholder="Add a comment... Use @username to mention someone"
+      disabled={isSubmittingComment}
+    />
+  </div>
+
+  <Button
+    type="submit"
+    className="w-full"
+    // disabled={!newComment.trim() || isSubmittingComment}
+     disabled={isSubmittingComment}
+  >
+    <Send className="h-4 w-4 mr-2" />
+    {isSubmittingComment ? 'Posting...' : 'Post Comment'}
+  </Button>
+</form>
+
                   </div>
 
                   {/* Comments List - Right Side */}
@@ -665,7 +724,7 @@ console.log("dashboad by id",dashboardById)
                     
                     {/* Fixed height container that shows exactly 2 comments with scroll for more */}
                     <div className="flex-1 mt-4">
-                      {dashboardComments.length === 0 ? (
+                      {comments.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center py-8">
                           <div className="bg-gray-100 p-4 rounded-full mb-4">
                             <MessageSquare className="h-8 w-8 text-gray-400" />
@@ -677,17 +736,17 @@ console.log("dashboad by id",dashboardById)
                         </div>
                       ) : (
                         <div className="h-full max-h-48 overflow-y-auto space-y-3 pr-2">
-                          {dashboardComments.map((comment) => (
-                            <div key={comment.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 group hover:bg-gray-100 transition-colors">
+                          {comments.map((comment) => (
+                            <div key={comment._id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 group hover:bg-gray-100 transition-colors">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
                                   <div className="bg-primary p-1.5 rounded-full">
                                     <User className="h-3 w-3 text-white" />
                                   </div>
                                   <div>
-                                    <span className="text-sm font-medium text-gray-900">{comment.userName}</span>
+                                    <span className="text-sm font-medium text-gray-900">{comment?.userName}</span>
                                     <p className="text-xs text-gray-500">
-                                      {new Date(comment.createdAt).toLocaleDateString()} at {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                      {new Date(comment.createdAt).toLocaleDateString()} at {new Date(comment?.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                   </div>
                                 </div>

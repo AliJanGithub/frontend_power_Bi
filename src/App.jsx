@@ -17,6 +17,7 @@ import { ReportErrorBoundary } from './components/report/ReportErrorBoundary';
 import { SuperAdminDashboard } from './components/superadmin/SuperAdminDashboard';
 import { DashboardProvider } from './components/DashboardContext';
 import { AcceptInvitePage } from './components/auth/AcceptInvitePage';
+import { SocketProvider } from './components/SocketContext';
 
 // ✅ Simple PrivateRoute wrapper
 // ✅ Fixed PrivateRoute with loading support
@@ -93,10 +94,14 @@ export default function App() {
                 path="/view-dashboard/:id"
                 element={
                   <PrivateRoute>
+                  <SocketProvider>
+
+                  
                     <DashboardProvider>
                     <DashboardViewerLayout />
 
                     </DashboardProvider>
+                    </SocketProvider>
                   </PrivateRoute>
                 }
               />
