@@ -27,22 +27,42 @@ export const DashboardProvider = ({ children }) => {
   };
 
   // ✅ Create new dashboard (Admin/SuperAdmin)
+  // const createDashboard = async (payload) => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const response = await api.post('/dashboards', payload);
+  //     // Add new dashboard to list
+  //     setDashboards((prev) => [response.data.data.dashboards, ...prev]);
+  //     return response.data;
+  //   } catch (err) {
+  //     console.error('Create dashboard failed:', err);
+  //     setError(err.response?.data?.dashboards?.message || err.message);
+  //     throw err;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const createDashboard = async (payload) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await api.post('/dashboards', payload);
-      // Add new dashboard to list
-      setDashboards((prev) => [response.data.data.dashboards, ...prev]);
-      return response.data;
-    } catch (err) {
-      console.error('Create dashboard failed:', err);
-      setError(err.response?.data?.dashboards?.message || err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  setError(null);
+  try {
+    // Payload must include: title, embedUrl, department, etc.
+    const response = await api.post('/dashboards', payload);
+
+    // Add the new dashboard to the local state
+    setDashboards((prev) => [response.data.data.dashboard, ...prev]);
+
+    return response.data;
+  } catch (err) {
+    console.error('Create dashboard failed:', err);
+    setError(err.response?.data?.message || err.message);
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // ✅ Get single dashboard by ID
   const getDashboardById = async (id) => {
@@ -106,35 +126,69 @@ export const DashboardProvider = ({ children }) => {
   };
 
 // ✅ Assign dashboard to users (Admin/SuperAdmin)
-const assignDashboard = async (id, userIds) => {
+// const assignDashboard = async (id, userIds) => {
+//   setLoading(true);
+//   setError(null);
+//   try {
+//     // 🟢 Send array as required by backend
+//     const response = await api.post(`/dashboards/${id}/assign`, {
+//       userIds, // must be an array
+//     });
+
+//     console.log('Dashboard assigned:', response.data);
+
+//     // 🟢 Update local state
+//     setDashboards((prev) =>
+//       prev.map((d) =>
+//         d._id === id
+//           ? { ...d, accessUsers: [...(d.accessUsers || []), ...userIds] }
+//           : d
+//       )
+//     );
+
+//     return response.data;
+//   } catch (err) {
+//     console.error('Assign dashboard failed:', err);
+//     setError(err.response?.data?.message || err.message);
+//     throw err;
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+const assignDashboard = async (userIds, department) => {
+  console.log("printinggggggggggg",department,userIds)
   setLoading(true);
   setError(null);
   try {
-    // 🟢 Send array as required by backend
-    const response = await api.post(`/dashboards/${id}/assign`, {
-      userIds, // must be an array
+    const response = await api.post('/dashboards/assign-by-department', {
+      department,
+      userIds
     });
 
-    console.log('Dashboard assigned:', response.data);
+    const updatedIds = response.data.data.dashboards.map(d => d._id);
 
-    // 🟢 Update local state
+    // Update local dashboards with new accessUsers
     setDashboards((prev) =>
       prev.map((d) =>
-        d._id === id
-          ? { ...d, accessUsers: [...(d.accessUsers || []), ...userIds] }
+        updatedIds.includes(d._id)
+          ? {
+              ...d,
+              accessUsers: Array.from(new Set([...(d.accessUsers || []), ...userIds]))
+            }
           : d
       )
     );
 
     return response.data;
   } catch (err) {
-    console.error('Assign dashboard failed:', err);
+    console.error('Assign by department failed:', err);
     setError(err.response?.data?.message || err.message);
     throw err;
   } finally {
     setLoading(false);
   }
 };
+
 
 
   // ✅ Unassign dashboard from user

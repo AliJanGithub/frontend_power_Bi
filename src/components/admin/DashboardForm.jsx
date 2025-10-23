@@ -112,7 +112,32 @@ const DashboardForm = ({
             </p>
           </div>
         </div>
+ 
+      {/* Department Selection */}
+<div className="space-y-3">
+  <Label htmlFor="department" className="text-sm font-medium text-gray-900">
+    Department *
+  </Label>
+  <select
+    id="department"
+    value={formData.department}
+    onChange={(e) => handleChange('department', e.target.value)}
+    className="h-11 px-4 w-full border border-gray-300 rounded-md text-sm"
+  >
+    <option value="">Select a department</option>
+    <option value="FINANCE">Finance</option>
+    <option value="SALES">Sales</option>
+    <option value="MARKETING">Marketing</option>
+    <option value="GENERAL">General</option>
+    <option value="OTHER">Other</option>
+    <option value="HR">HR</option>
+  </select>
+  {formErrors.department && (
+    <p className="text-sm text-red-600 mt-1">{formErrors.department}</p>
+  )}
+</div>
 
+        
         {/* Form Actions */}
         <div className="flex justify-between items-center pt-6 border-t border-gray-200 mt-8 -mx-6 px-6">
           {editingDashboard ? (

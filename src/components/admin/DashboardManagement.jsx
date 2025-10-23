@@ -93,6 +93,7 @@ const [selectedUserIds, setSelectedUserIds] = useState([]);
     title: '',
     description: '',
     embedUrl: '',
+    department:''
     
   });
 
@@ -133,16 +134,6 @@ const handleAssignUsers = async () => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
   const validateForm = () => {
     const errors = {};
     
@@ -175,7 +166,7 @@ const handleAssignUsers = async () => {
       title: formData.title,
       description: formData.description,
       embedUrl: formData.embedUrl,
-      // department: formData.department,
+      department: formData.department,
       // createdBy: user?.id || '1',
       // isActive: true,
       // accessUsers: [] // Start with no access, admin can grant later
@@ -257,6 +248,7 @@ const handleAssignUsers = async () => {
       title: dashboard.title,
       description: dashboard.description,
       embedUrl: dashboard.embedUrl,
+      department:dashboard.department
     });
     setEditingDashboard(dashboard._id);
     setIsEditDialogOpen(true);

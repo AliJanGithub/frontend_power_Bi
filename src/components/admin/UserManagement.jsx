@@ -31,6 +31,8 @@ import {
 } from '../icons/Icons';
 import { useToast } from '../ToastProvider';
 import { useUserManagement } from '../hooks/useUserManagement';
+import { useDashboards } from '../DashboardContext';
+import { set } from 'react-hook-form';
 
 
 // Mock users data (in real app this would come from backend)
@@ -76,9 +78,9 @@ export function UserManagement() {
     revokeAccess,
     grantReportAccess,
     revokeReportAccess,
-    departments 
+    // departments 
   } = useData();
-  const {addUser,error,getUsers,inviteUser,loading,users,deleteUser}=useUserManagement()
+  const {addUser,error,getUsers,inviteUser,users,deleteUser}=useUserManagement()
   // const [users, setUsers] = useState(initialMockUsers);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isAccessDialogOpen, setIsAccessDialogOpen] = useState(false);
@@ -97,7 +99,10 @@ export function UserManagement() {
   const [expandedDepartments, setExpandedDepartments] = useState([]);
   const [expandedContentSections, setExpandedContentSections] = useState([]);
 
-
+ const { assignDashboard ,loading} =useDashboards()
+  const [open, setOpen] = useState(false);
+  const [selectedDept, setSelectedDept] = useState("");
+  const [id,setId]=useState(null)
 
 
 
@@ -219,33 +224,54 @@ const invitationCheck=()=>{
       showToast(`Password reset email sent to ${user.email}`, 'success');
     }
   };
-
-  // New comprehensive access management functions
-  const handleManageAccess = (user) => {
-    setManagingAccessUser(user);
-    
-    // Calculate current department access
-    const currentAccess = {};
-    
-    departments.forEach(dept => {
-      const deptDashboards = dashboards.filter(d => d.department === dept);
-      const deptReports = reports.filter(r => r.department === dept);
-      
-      const userHasDashboardAccess = deptDashboards.length > 0 && 
-        deptDashboards.every(d => d.accessUsers.includes(user.id));
-      
-      const userHasReportAccess = deptReports.length > 0 && 
-        deptReports.every(r => r.accessUsers.includes(user.id));
-      
-      currentAccess[dept] = {
-        dashboards: userHasDashboardAccess,
-        reports: userHasReportAccess
-      };
-    });
-    
-    setDepartmentAccess(currentAccess);
-    setIsAccessDialogOpen(true);
+   
+    const departments = ["FINANCE", "SALES", "MARKETING", "GENERAL", "OTHER", "HR"];
+ const handleManageAccesss = (user) => {
+    setOpen(true); // open dialog
+    setId(user)
   };
+
+  const handleConfirms = async() => {
+    if (!selectedDept) return alert("Please select a department first!");
+    try {
+       await assignDashboard([id._id], selectedDept); // call context function
+    
+        showToast("succesfully assigned to user")
+    
+    setOpen(false);
+    setSelectedDept("");
+    } catch (error) {
+      showToast('error')
+    }
+    
+
+  };
+  // New comprehensive access management functions
+  // const handleManageAccess = (user) => {
+  //   setManagingAccessUser(user);
+    
+  //   // Calculate current department access
+  //   const currentAccess = {};
+    
+  //   departments.forEach(dept => {
+  //     const deptDashboards = dashboards.filter(d => d.department === dept);
+  //     // const deptReports = reports.filter(r => r.department === dept);
+      
+  //     const userHasDashboardAccess = deptDashboards.length > 0 && 
+  //       deptDashboards.every(d => d.accessUsers.includes(user.id));
+      
+  //     const userHasReportAccess = deptReports.length > 0 && 
+  //       deptReports.every(r => r.accessUsers.includes(user.id));
+      
+  //     currentAccess[dept] = {
+  //       dashboards: userHasDashboardAccess,
+  //       reports: userHasReportAccess
+  //     };
+  //   });
+    
+  //   setDepartmentAccess(currentAccess);
+  //   setIsAccessDialogOpen(true);
+  // };
 
   const handleDepartmentToggle = (department, type, granted) => {
     if (!managingAccessUser) return;
@@ -526,7 +552,7 @@ const invitationCheck=()=>{
                   </div>
                 </div>
                 
-                <div className="text-right space-y-1">
+                {/* <div className="text-right space-y-1">
                   <p className="text-xs text-gray-500">
                     Last login: {new Date(user.lastLogin).toLocaleDateString()}
                   </p>
@@ -554,7 +580,95 @@ const invitationCheck=()=>{
                      {loading ? 'Deleting…' : 'Delete user'}
                     </Button>
                   </div>
-                </div>
+                </div> */}
+
+
+ <div className="text-right space-y-1">
+      <p className="text-xs text-gray-500">
+        Last login: {new Date(user.lastLogin).toLocaleDateString()}
+      </p>
+      <p className="text-xs text-gray-500">
+        Access to {getUserAccess(user.id).length} dashboard(s)
+      </p>
+
+      <div className="flex items-center justify-end space-x-2 mt-2">
+        {user.role !== "ADMIN" && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleManageAccesss(user)}
+            className="h-8"
+          >
+            <Settings className="h-3 w-3 mr-1" />
+            Manage Access
+          </Button>
+        )}
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleDeleteMyUser(user._id)}
+          className="h-8 px-3 text-xs"
+        >
+          {loading ? "Deleting…" : "Delete user"}
+        </Button>
+      </div>
+
+      {/* Department Selection Dialog */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-4xl max-h-[60vh] overflow-y-auto p-8">
+          <DialogHeader className="pb-6">
+            <DialogTitle className="text-xl">Select Department</DialogTitle>
+            {id && (
+              <p className="text-gray-600 text-sm mt-2">
+                Assigning access for:{" "}
+                <span className="font-medium text-gray-900">
+                  {id.name}
+                </span>
+              </p>
+            )}
+          </DialogHeader>
+
+          {/* Department Selection Buttons */}
+          <div className="flex flex-wrap gap-3 justify-center py-6">
+            {departments.map((dept) => (
+              <Button
+                key={dept}
+                variant={selectedDept === dept ? "default" : "outline"}
+                onClick={() => setSelectedDept(dept)}
+                className={`px-6 py-3 text-sm rounded-xl ${
+                  selectedDept === dept
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-800 hover:bg-gray-100"
+                }`}
+              >
+                {dept}
+              </Button>
+            ))}
+          </div>
+
+          {/* Footer Buttons */}
+          <div className="flex justify-end space-x-3 pt-6 mt-6 border-t border-gray-200">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setOpen(false);
+                setSelectedDept("");
+                id(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirms} disabled={!selectedDept}>
+              {loading ? "conFirming " : "Confirm"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+
+
+
               </div>
             ))}
           </div>
@@ -734,7 +848,7 @@ const invitationCheck=()=>{
                             )}
                           </div>
 
-                          {/* Reports Section */}
+                         
                           <div className="bg-white rounded-lg border overflow-hidden">
                             <div 
                               className="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer"
@@ -762,7 +876,7 @@ const invitationCheck=()=>{
                               }`} />
                             </div>
 
-                            {/* Individual Reports */}
+                           
                             {expandedContentSections.includes(`${department}-reports`) && reportCount > 0 && (
                               <div className="px-3 pb-3 space-y-2 bg-gray-50">
                                 {reports
@@ -800,7 +914,7 @@ const invitationCheck=()=>{
                 )}
               </div>
 
-              {/* Fixed Footer */}
+              
               <div className="flex justify-end space-x-3 pt-6 mt-6 border-t border-gray-200 px-1">
                 <Button 
                   variant="outline"
