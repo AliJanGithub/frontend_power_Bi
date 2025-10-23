@@ -10,7 +10,7 @@ import { ForgotPasswordPage } from './components/auth/ForgotPasswordPage';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminDashboardTopNav } from './components/admin/AdminDashboardTopNav';
 import { UserDashboard } from './components/user/UserDashboard';
-import { UserDashboardTopNav } from './components/user/UserDashboardTopNav';
+// import { UserDashboardTopNav } from './components/user/UserDashboardTopNav';
 import { DashboardViewerLayout } from './components/dashboard/DashboardViewerLayout';
 import { ReportViewerLayout } from './components/report/ReportViewerLayout';
 import { ReportErrorBoundary } from './components/report/ReportErrorBoundary';
@@ -151,14 +151,14 @@ export default function App() {
                   </PrivateRoute>
                 }
               />
-              <Route
+              {/* <Route
                 path="/user-topnav"
                 element={
                   <PrivateRoute roles={['USER']}>
                     <UserDashboardTopNav />
                   </PrivateRoute>
                 }
-              />
+              /> */}
 
               {/* Super Admin route */}
               <Route

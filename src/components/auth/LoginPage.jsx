@@ -123,7 +123,7 @@ const handleSubmit = async (e) => {
               <div className="text-center">
                 <button 
                   type="button"
-                  onClick={() => (window).navigate('forgot-password')}
+                  onClick={() =>navigate('/forgot-password')}
                   className="text-blue-600 hover:text-blue-800 text-sm hover:underline bg-transparent border-0 cursor-pointer"
                 >
                   Forgot your password?
